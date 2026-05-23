@@ -2,6 +2,8 @@
 
 Folder Peek is a free macOS Quick Look app for previewing folder and archive contents from Finder.
 
+Portuguese guide: [README.pt-BR.md](./README.pt-BR.md)
+
 ## What it includes
 
 - Native macOS SwiftUI host app.
@@ -22,7 +24,13 @@ The script installs and opens the user-facing app at:
 /Applications/FolderPeek.app
 ```
 
-It also stages a development copy under `dist/`, but the Quick Look extension should be used from `/Applications/FolderPeek.app`.
+The generated app bundle is also committed in the repo at:
+
+```text
+dist/FolderPeek.app
+```
+
+To install it manually, copy `dist/FolderPeek.app` to `/Applications`, or run the build script above to refresh the installed copy.
 
 For tests:
 
