@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import CoreImage
 import FolderPeekCore
 
 // MARK: - Window Glass Accessor
@@ -21,13 +22,14 @@ private struct WindowGlassAccessor: NSViewRepresentable {
 // MARK: - App Tab
 
 private enum AppTab: CaseIterable {
-    case home, settings, about
+    case home, settings, about, donation
 
     var label: String {
         switch self {
         case .home:     "Home"
         case .settings: "Configurações"
         case .about:    "Sobre"
+        case .donation: "Doação"
         }
     }
 
@@ -36,6 +38,7 @@ private enum AppTab: CaseIterable {
         case .home:     "house.fill"
         case .settings: "gearshape.fill"
         case .about:    "info.circle.fill"
+        case .donation: "heart.fill"
         }
     }
 }
@@ -133,7 +136,7 @@ struct ContentView: View {
     private var tabContent: some View {
         switch selectedTab {
         case .home:
-            HomeTab()
+            HomeTab(onDonateTap: { selectedTab = .donation })
         case .settings:
             SettingsTab(
                 fontSize: $fontSize,
@@ -144,6 +147,8 @@ struct ContentView: View {
             )
         case .about:
             AboutTab()
+        case .donation:
+            DonationTab()
         }
     }
 }
@@ -151,6 +156,8 @@ struct ContentView: View {
 // MARK: - Home Tab
 
 private struct HomeTab: View {
+    let onDonateTap: () -> Void
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -158,6 +165,7 @@ private struct HomeTab: View {
                 extensionStatusCard
                 appLocationCard
                 activationStepsCard
+                donationCTA
             }
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -235,6 +243,28 @@ private struct HomeTab: View {
                 Label("No Finder, pressione Espaço ou ⌘Y para visualizar", systemImage: "4.circle.fill")
             }
             .foregroundStyle(.primary)
+        }
+    }
+
+    private var donationCTA: some View {
+        PeekCard {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "heart.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.pink)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Gostou do FolderPeek?")
+                        .font(.headline)
+                    Text("Abra a aba de doação para apoiar o desenvolvimento com PIX.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Button("Doar") {
+                    onDonateTap()
+                }
+                .buttonStyle(.borderedProminent)
+            }
         }
     }
 }
@@ -387,6 +417,152 @@ private struct AboutTab: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+// MARK: - Donation Tab
+
+private struct DonationTab: View {
+    private let pixKey = "d6d63f9b-5e12-4b96-8f33-d2b83a23e86d"
+    @State private var didCopyKey = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                heroCard
+                pixCard
+                qrCard
+                supportCard
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .safeAreaInset(edge: .bottom) {
+            Text("Obrigado por apoiar o projeto")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 10)
+        }
+    }
+
+    private var heroCard: some View {
+        PeekCard {
+            HStack(alignment: .center, spacing: 16) {
+                Image(systemName: "heart.text.square.fill")
+                    .font(.system(size: 34))
+                    .foregroundStyle(.pink)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Apoie o desenvolvedor")
+                        .font(.title3.bold())
+                    Text("Se o FolderPeek te ajudou, uma doação via PIX mantém o projeto vivo, leve e independente.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private var pixCard: some View {
+        PeekCard {
+            Label("Chave PIX", systemImage: "qrcode")
+                .font(.headline)
+            Text(pixKey)
+                .font(.system(.body, design: .monospaced))
+                .textSelection(.enabled)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+            HStack(spacing: 10) {
+                Button {
+                    copyPixKey()
+                } label: {
+                    Label(didCopyKey ? "Copiado" : "Copiar chave PIX", systemImage: didCopyKey ? "checkmark" : "doc.on.doc")
+                }
+                .buttonStyle(.borderedProminent)
+
+                Text("Abra o app do banco ou use o QR code abaixo.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private var qrCard: some View {
+        PeekCard {
+            Label("QR Code", systemImage: "camera.viewfinder")
+                .font(.headline)
+            Text("Escaneie com seu app de pagamento ou copie a chave acima.")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Group {
+                if let qrImage = DonationQRCodeRenderer.makeImage(text: pixKey) {
+                    Image(nsImage: qrImage)
+                        .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()
+                        .frame(width: 220, height: 220)
+                        .padding(18)
+                        .background(.white, in: RoundedRectangle(cornerRadius: 18))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(.quaternary, lineWidth: 1)
+                        )
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 38))
+                            .foregroundStyle(.secondary)
+                        Text("Não foi possível gerar o QR code.")
+                            .font(.headline)
+                        Text("Use a chave PIX acima para concluir a doação.")
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(24)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var supportCard: some View {
+        PeekCard {
+            Label("Obrigado por ajudar", systemImage: "sparkles")
+                .font(.headline)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Toda contribuição ajuda a manter o app disponível, corrigido e com novas melhorias.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Doação livre, sem valor mínimo.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private func copyPixKey() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(pixKey, forType: .string)
+        didCopyKey = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            didCopyKey = false
+        }
+    }
+}
+
+private enum DonationQRCodeRenderer {
+    static func makeImage(text: String) -> NSImage? {
+        guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return nil }
+        filter.setValue(Data(text.utf8), forKey: "inputMessage")
+        filter.setValue("M", forKey: "inputCorrectionLevel")
+
+        guard let outputImage = filter.outputImage else { return nil }
+        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: 12, y: 12))
+        let context = CIContext(options: nil)
+        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
+        return NSImage(cgImage: cgImage, size: NSSize(width: scaledImage.extent.width, height: scaledImage.extent.height))
     }
 }
 

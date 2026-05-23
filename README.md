@@ -2,7 +2,7 @@
 
 Folder Peek is a free macOS Quick Look app for previewing folder and archive contents from Finder.
 
-Portuguese guide: [README.pt-BR.md](./README.pt-BR.md)
+Portuguese guide (primary): [README.pt-BR.md](./README.pt-BR.md)
 
 ## What it includes
 
@@ -11,6 +11,13 @@ Portuguese guide: [README.pt-BR.md](./README.pt-BR.md)
 - Finder-style table with name, kind, size, modified date, and relative path.
 - Shared, testable `FolderPeekCore` framework.
 - ZIP listing through a safe central-directory reader in the shared core, ready to re-enable once archive UTTypes are finalized.
+
+## Donation
+
+If Folder Peek has been helpful, you can support the project with PIX:
+
+- PIX key: `d6d63f9b-5e12-4b96-8f33-d2b83a23e86d`
+- The app also includes a dedicated donation tab with a QR code and copy button.
 
 ## Build
 

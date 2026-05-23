@@ -2,6 +2,8 @@
 
 O Folder Peek é um app gratuito de Quick Look para macOS que permite visualizar o conteúdo de pastas e arquivos compactados diretamente no Finder.
 
+Guia principal: este README em PT-BR.
+
 ## O que ele inclui
 
 - App principal nativo em SwiftUI para macOS.
@@ -9,6 +11,13 @@ O Folder Peek é um app gratuito de Quick Look para macOS que permite visualizar
 - Tabela no estilo Finder com nome, tipo, tamanho, data de modificação e caminho relativo.
 - Framework compartilhado e testável `FolderPeekCore`.
 - Listagem de ZIP por meio de um leitor seguro de central directory no core compartilhado, pronto para ser reativado quando os UTTypes de archive forem finalizados.
+
+## Doação
+
+Se o Folder Peek te ajudou, você pode apoiar o projeto com PIX:
+
+- Chave PIX: `d6d63f9b-5e12-4b96-8f33-d2b83a23e86d`
+- O app também exibe uma aba dedicada de doação com QR code e botão de copiar.
 
 ## Onde encontrar o app gerado
 
