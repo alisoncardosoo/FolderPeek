@@ -1,0 +1,275 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100000000000000000000101 /* PreviewPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000001 /* PreviewPreferences.swift */; };
+		100000000000000000000102 /* PreviewItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000002 /* PreviewItem.swift */; };
+		100000000000000000000103 /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000003 /* Formatters.swift */; };
+		100000000000000000000104 /* FileKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000004 /* FileKind.swift */; };
+		100000000000000000000105 /* FolderScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000005 /* FolderScanner.swift */; };
+		100000000000000000000106 /* ArchiveScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000006 /* ArchiveScanner.swift */; };
+		100000000000000000000107 /* PreviewScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000007 /* PreviewScanner.swift */; };
+		100000000000000000000108 /* FolderPeekCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; };
+		100000000000000000000109 /* FolderPeekCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; };
+		10000000000000000000010A /* FolderPeekCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; };
+		10000000000000000000010B /* FolderPeekCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		10000000000000000000010C /* FolderPeekCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		10000000000000000000010D /* FolderPeekQuickLookExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 100000000000000000000033 /* FolderPeekQuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		100000000000000000000121 /* FolderPeekApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000021 /* FolderPeekApp.swift */; };
+		100000000000000000000122 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000022 /* ContentView.swift */; };
+		100000000000000000000123 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000023 /* PreferencesView.swift */; };
+		100000000000000000000124 /* AppActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000026 /* AppActions.swift */; };
+		100000000000000000000125 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000027 /* Assets.xcassets */; };
+		100000000000000000000141 /* PreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000041 /* PreviewViewController.swift */; };
+		100000000000000000000161 /* FolderScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000061 /* FolderScannerTests.swift */; };
+		100000000000000000000162 /* ArchiveScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000062 /* ArchiveScannerTests.swift */; };
+		100000000000000000000163 /* FormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000063 /* FormatterTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		100000000000000000000201 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000300 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 100000000000000000000401;
+			remoteInfo = FolderPeekCore;
+		};
+		100000000000000000000202 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000300 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 100000000000000000000402;
+			remoteInfo = FolderPeekQuickLookExtension;
+		};
+		100000000000000000000203 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000300 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 100000000000000000000401;
+			remoteInfo = FolderPeekCore;
+		};
+		100000000000000000000204 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000300 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 100000000000000000000401;
+			remoteInfo = FolderPeekCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		100000000000000000000501 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				10000000000000000000010B /* FolderPeekCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		100000000000000000000502 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				10000000000000000000010D /* FolderPeekQuickLookExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		100000000000000000000503 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				10000000000000000000010C /* FolderPeekCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		100000000000000000000001 /* PreviewPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPreferences.swift; sourceTree = "<group>"; };
+		100000000000000000000002 /* PreviewItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewItem.swift; sourceTree = "<group>"; };
+		100000000000000000000003 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
+		100000000000000000000004 /* FileKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileKind.swift; sourceTree = "<group>"; };
+		100000000000000000000005 /* FolderScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScanner.swift; sourceTree = "<group>"; };
+		100000000000000000000006 /* ArchiveScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveScanner.swift; sourceTree = "<group>"; };
+		100000000000000000000007 /* PreviewScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewScanner.swift; sourceTree = "<group>"; };
+		100000000000000000000021 /* FolderPeekApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPeekApp.swift; sourceTree = "<group>"; };
+		100000000000000000000022 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		100000000000000000000023 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		100000000000000000000024 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		100000000000000000000025 /* FolderPeek.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FolderPeek.entitlements; sourceTree = "<group>"; };
+		100000000000000000000026 /* AppActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActions.swift; sourceTree = "<group>"; };
+		100000000000000000000027 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		100000000000000000000031 /* FolderPeekCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FolderPeekCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		100000000000000000000032 /* FolderPeek.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FolderPeek.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		100000000000000000000033 /* FolderPeekQuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FolderPeekQuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		100000000000000000000034 /* FolderPeekCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FolderPeekCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		100000000000000000000041 /* PreviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewViewController.swift; sourceTree = "<group>"; };
+		100000000000000000000042 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		100000000000000000000043 /* FolderPeekQuickLookExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FolderPeekQuickLookExtension.entitlements; sourceTree = "<group>"; };
+		100000000000000000000061 /* FolderScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScannerTests.swift; sourceTree = "<group>"; };
+		100000000000000000000062 /* ArchiveScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveScannerTests.swift; sourceTree = "<group>"; };
+		100000000000000000000063 /* FormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatterTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		100000000000000000000601 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000602 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000108 /* FolderPeekCore.framework in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000603 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000109 /* FolderPeekCore.framework in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000604 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000010A /* FolderPeekCore.framework in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		100000000000000000000701 = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000711 /* FolderPeekCore */,
+				100000000000000000000721 /* FolderPeek */,
+				100000000000000000000741 /* FolderPeekQuickLookExtension */,
+				100000000000000000000761 /* FolderPeekCoreTests */,
+				100000000000000000000799 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		100000000000000000000711 /* FolderPeekCore */ = {isa = PBXGroup; children = (100000000000000000000712 /* Sources */, ); path = FolderPeekCore; sourceTree = "<group>"; };
+		100000000000000000000712 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000005, 100000000000000000000006, 100000000000000000000007, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000721 /* FolderPeek */ = {isa = PBXGroup; children = (100000000000000000000722 /* Sources */, 100000000000000000000723 /* Resources */, ); path = FolderPeek; sourceTree = "<group>"; };
+		100000000000000000000722 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000021, 100000000000000000000022, 100000000000000000000023, 100000000000000000000026, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000723 /* Resources */ = {isa = PBXGroup; children = (100000000000000000000024, 100000000000000000000025, 100000000000000000000027, ); path = Resources; sourceTree = "<group>"; };
+		100000000000000000000741 /* FolderPeekQuickLookExtension */ = {isa = PBXGroup; children = (100000000000000000000742 /* Sources */, 100000000000000000000743 /* Resources */, ); path = FolderPeekQuickLookExtension; sourceTree = "<group>"; };
+		100000000000000000000742 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000041, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000743 /* Resources */ = {isa = PBXGroup; children = (100000000000000000000042, 100000000000000000000043, ); path = Resources; sourceTree = "<group>"; };
+		100000000000000000000761 /* FolderPeekCoreTests */ = {isa = PBXGroup; children = (100000000000000000000061, 100000000000000000000062, 100000000000000000000063, ); path = FolderPeekCoreTests; sourceTree = "<group>"; };
+		100000000000000000000799 /* Products */ = {isa = PBXGroup; children = (100000000000000000000031, 100000000000000000000032, 100000000000000000000033, 100000000000000000000034, ); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		100000000000000000000401 /* FolderPeekCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 100000000000000000000801 /* Build configuration list for PBXNativeTarget "FolderPeekCore" */;
+			buildPhases = (100000000000000000000901 /* Sources */, 100000000000000000000601 /* Frameworks */, );
+			buildRules = ();
+			dependencies = ();
+			name = FolderPeekCore;
+			productName = FolderPeekCore;
+			productReference = 100000000000000000000031 /* FolderPeekCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		100000000000000000000402 /* FolderPeekQuickLookExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 100000000000000000000802 /* Build configuration list for PBXNativeTarget "FolderPeekQuickLookExtension" */;
+			buildPhases = (100000000000000000000903 /* Sources */, 100000000000000000000603 /* Frameworks */, 100000000000000000000503 /* Embed Frameworks */, );
+			buildRules = ();
+			dependencies = (100000000000000000000205 /* PBXTargetDependency */, );
+			name = FolderPeekQuickLookExtension;
+			productName = FolderPeekQuickLookExtension;
+			productReference = 100000000000000000000033 /* FolderPeekQuickLookExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		100000000000000000000403 /* FolderPeek */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 100000000000000000000803 /* Build configuration list for PBXNativeTarget "FolderPeek" */;
+			buildPhases = (100000000000000000000902 /* Sources */, 100000000000000000000905 /* Resources */, 100000000000000000000602 /* Frameworks */, 100000000000000000000501 /* Embed Frameworks */, 100000000000000000000502 /* Embed App Extensions */, );
+			buildRules = ();
+			dependencies = (100000000000000000000206 /* PBXTargetDependency */, 100000000000000000000207 /* PBXTargetDependency */, );
+			name = FolderPeek;
+			productName = FolderPeek;
+			productReference = 100000000000000000000032 /* FolderPeek.app */;
+			productType = "com.apple.product-type.application";
+		};
+		100000000000000000000404 /* FolderPeekCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 100000000000000000000804 /* Build configuration list for PBXNativeTarget "FolderPeekCoreTests" */;
+			buildPhases = (100000000000000000000904 /* Sources */, 100000000000000000000604 /* Frameworks */, );
+			buildRules = ();
+			dependencies = (100000000000000000000208 /* PBXTargetDependency */, );
+			name = FolderPeekCoreTests;
+			productName = FolderPeekCoreTests;
+			productReference = 100000000000000000000034 /* FolderPeekCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		100000000000000000000300 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					100000000000000000000401 = {CreatedOnToolsVersion = 26.0; };
+					100000000000000000000402 = {CreatedOnToolsVersion = 26.0; };
+					100000000000000000000403 = {CreatedOnToolsVersion = 26.0; };
+					100000000000000000000404 = {CreatedOnToolsVersion = 26.0; };
+				};
+			};
+			buildConfigurationList = 100000000000000000000800 /* Build configuration list for PBXProject "FolderPeek" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base, );
+			mainGroup = 100000000000000000000701;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 100000000000000000000799 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (100000000000000000000401, 100000000000000000000402, 100000000000000000000403, 100000000000000000000404, );
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		100000000000000000000905 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000125, ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		100000000000000000000901 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000101, 100000000000000000000102, 100000000000000000000103, 100000000000000000000104, 100000000000000000000105, 100000000000000000000106, 100000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000902 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000121, 100000000000000000000122, 100000000000000000000123, 100000000000000000000124, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000903 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000141, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000904 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000161, 100000000000000000000162, 100000000000000000000163, ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		100000000000000000000205 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 100000000000000000000401 /* FolderPeekCore */; targetProxy = 100000000000000000000201 /* PBXContainerItemProxy */; };
+		100000000000000000000206 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 100000000000000000000401 /* FolderPeekCore */; targetProxy = 100000000000000000000203 /* PBXContainerItemProxy */; };
+		100000000000000000000207 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 100000000000000000000402 /* FolderPeekQuickLookExtension */; targetProxy = 100000000000000000000202 /* PBXContainerItemProxy */; };
+		100000000000000000000208 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 100000000000000000000401 /* FolderPeekCore */; targetProxy = 100000000000000000000204 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		100000000000000000000A01 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_WARN_DOCUMENTATION_COMMENTS = YES; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; ENABLE_STRICT_OBJC_MSGSEND = YES; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_NO_COMMON_BLOCKS = YES; GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 6.0; }; name = Debug; };
+		100000000000000000000A02 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_WARN_DOCUMENTATION_COMMENTS = YES; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_NO_COMMON_BLOCKS = YES; GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0; }; name = Release; };
+		100000000000000000000A11 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; DEFINES_MODULE = YES; DYLIB_COMPATIBILITY_VERSION = 1; DYLIB_CURRENT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INSTALL_PATH = "@rpath"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeekCore; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; }; name = Debug; };
+		100000000000000000000A12 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; DEFINES_MODULE = YES; DYLIB_COMPATIBILITY_VERSION = 1; DYLIB_CURRENT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INSTALL_PATH = "@rpath"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeekCore; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; }; name = Release; };
+		100000000000000000000A21 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_ENTITLEMENTS = FolderPeekQuickLookExtension/Resources/FolderPeekQuickLookExtension.entitlements; CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = FolderPeekQuickLookExtension/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeek.QuickLookExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; }; name = Debug; };
+		100000000000000000000A22 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_ENTITLEMENTS = FolderPeekQuickLookExtension/Resources/FolderPeekQuickLookExtension.entitlements; CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = FolderPeekQuickLookExtension/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeek.QuickLookExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; }; name = Release; };
+		100000000000000000000A31 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_ENTITLEMENTS = FolderPeek/Resources/FolderPeek.entitlements; CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = FolderPeek/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeek; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = NO; }; name = Debug; };
+		100000000000000000000A32 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_ENTITLEMENTS = FolderPeek/Resources/FolderPeek.entitlements; CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = FolderPeek/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeek; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = NO; }; name = Release; };
+		100000000000000000000A41 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = ""; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeekCoreTests; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; }; name = Debug; };
+		100000000000000000000A42 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = ""; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks"; PRODUCT_BUNDLE_IDENTIFIER = com.alisoncardoso.FolderPeekCoreTests; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		100000000000000000000800 /* Build configuration list for PBXProject "FolderPeek" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A01, 100000000000000000000A02, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		100000000000000000000801 /* Build configuration list for PBXNativeTarget "FolderPeekCore" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A11, 100000000000000000000A12, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		100000000000000000000802 /* Build configuration list for PBXNativeTarget "FolderPeekQuickLookExtension" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A21, 100000000000000000000A22, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		100000000000000000000803 /* Build configuration list for PBXNativeTarget "FolderPeek" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A31, 100000000000000000000A32, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		100000000000000000000804 /* Build configuration list for PBXNativeTarget "FolderPeekCoreTests" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A41, 100000000000000000000A42, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = 100000000000000000000300 /* Project object */;
+}
