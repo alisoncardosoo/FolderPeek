@@ -85,10 +85,13 @@ struct ContentView: View {
                                 .font(.system(size: 10, weight: .medium))
                         }
                         .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                        .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 18)
+                        .contentShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity)
                     .glassEffect(
                         isSelected
                             ? .regular.tint(Color.accentColor.opacity(0.15)).interactive()
