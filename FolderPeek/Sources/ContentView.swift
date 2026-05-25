@@ -171,7 +171,7 @@ private struct HomeTab: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom) {
-            Text("FolderPeek v1.0")
+            Text("FolderPeek v1.1")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .frame(maxWidth: .infinity)
@@ -410,9 +410,9 @@ private struct AboutTab: View {
             Label("Versão", systemImage: "tag.fill")
                 .font(.headline)
             VStack(alignment: .leading, spacing: 4) {
-                Text("FolderPeek v1.0.0")
+                Text("FolderPeek v1.1.0")
                     .font(.system(.body, design: .monospaced))
-                Text("Build 1  ·  macOS 14+")
+                Text("Build 2  ·  macOS 14+")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
             }

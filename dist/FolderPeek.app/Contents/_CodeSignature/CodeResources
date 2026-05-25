@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		j0J0hIT7VlYpdwuOM4vC+h3FKp0=
+		ZZut4IcX4QBuZNVWRanItsRvpCw=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -19,19 +19,19 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			SEm6531M71cYZS26s1dQceXD9Uo=
+			HBqrbdxeq9XDnJ4oNVLeoMkgPzE=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"4849bae77d4cef5718652dbab3575071e5c3f54a"</string>
+			<string>cdhash H"1c1aab6ddc5eabd5c39c9e283552dea0c9203f31"</string>
 		</dict>
 		<key>PlugIns/FolderPeekQuickLookExtension.appex</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			wuI2Tq2vS/GLp1UBOJPegEHGH4I=
+			5zHR4aompE5P95JZ03Vb2AqOfFs=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"c2e2364eadaf4bf18ba755013893de8041c61f82"</string>
+			<string>cdhash H"e731d1e1aa26a44e4ff79259d3755bd80a8e7c5b"</string>
 		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
@@ -44,7 +44,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Iwo6OFOdLyUMVnWZB0C2KEDMTtRIcv18rvoPGiFRBZI=
+			qR/Snt2LHDt9K04v2ivmjCVVwtIh0VaWADbBas3OAt0=
 			</data>
 		</dict>
 	</dict>
