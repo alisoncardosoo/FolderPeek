@@ -15,9 +15,22 @@ EXTENSION_ENTITLEMENTS="$ROOT_DIR/FolderPeekQuickLookExtension/Resources/FolderP
 sign_folderpeek_app() {
   local app_path="$1"
   local extension_path="$app_path/Contents/PlugIns/FolderPeekQuickLookExtension.appex"
+  local sparkle_framework="$app_path/Contents/Frameworks/Sparkle.framework"
 
   codesign --force --sign - "$app_path/Contents/Frameworks/FolderPeekCore.framework"
   codesign --force --sign - "$extension_path/Contents/Frameworks/FolderPeekCore.framework"
+  if [[ -d "$sparkle_framework" ]]; then
+    if [[ -d "$sparkle_framework/Versions/Current/XPCServices/Downloader.xpc" ]]; then
+      codesign --force --sign - "$sparkle_framework/Versions/Current/XPCServices/Downloader.xpc"
+    fi
+    if [[ -d "$sparkle_framework/Versions/Current/XPCServices/Installer.xpc" ]]; then
+      codesign --force --sign - "$sparkle_framework/Versions/Current/XPCServices/Installer.xpc"
+    fi
+    if [[ -d "$sparkle_framework/Versions/Current/Updater.app" ]]; then
+      codesign --force --sign - "$sparkle_framework/Versions/Current/Updater.app"
+    fi
+    codesign --force --sign - "$sparkle_framework"
+  fi
   codesign --force --sign - --entitlements "$EXTENSION_ENTITLEMENTS" "$extension_path"
   codesign --force --sign - --entitlements "$APP_ENTITLEMENTS" "$app_path"
 }

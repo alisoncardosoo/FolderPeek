@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>Folder Peek Updates</title>
+    <link>https://github.com/alisoncardosoo/FolderPeek/releases</link>
+    <description>Stable updates for Folder Peek</description>
+    <language>en</language>
+    <item>
+      <title>Version 1.3</title>
+      <pubDate>Tue, 26 May 2026 00:00:00 +0000</pubDate>
+      <enclosure
+        url="https://github.com/alisoncardosoo/FolderPeek/releases/download/v1.3/FolderPeek.zip"
+        sparkle:version="4"
+        sparkle:shortVersionString="1.3"
+        length="0"
+        type="application/octet-stream"
+        sparkle:edSignature="REPLACE_WITH_SPARKLE_SIGNATURE" />
+    </item>
+  </channel>
+</rss>

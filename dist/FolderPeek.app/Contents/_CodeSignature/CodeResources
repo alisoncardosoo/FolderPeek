@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		ZZut4IcX4QBuZNVWRanItsRvpCw=
+		hSQK7Yjnjtt2qCdRCe5ZqyKSAek=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -19,19 +19,28 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			HBqrbdxeq9XDnJ4oNVLeoMkgPzE=
+			WK9Tft4kFWzWi+2dpaCME7xBXh8=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"1c1aab6ddc5eabd5c39c9e283552dea0c9203f31"</string>
+			<string>cdhash H"58af537ede24156cd68bed9da5a08c13bc415e1f"</string>
+		</dict>
+		<key>Frameworks/Sparkle.framework</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			NKlhlA0YXoOUdivDmTkEODyw6Qg=
+			</data>
+			<key>requirement</key>
+			<string>cdhash H"34a961940d185e8394762bc3993904383cb0e908" or cdhash H"be0d134bd097c6f2a214f7acdb3ce6757cd4de3a"</string>
 		</dict>
 		<key>PlugIns/FolderPeekQuickLookExtension.appex</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			5zHR4aompE5P95JZ03Vb2AqOfFs=
+			esMPcqmTLmRKR5m0gCNSvRAv4B4=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"e731d1e1aa26a44e4ff79259d3755bd80a8e7c5b"</string>
+			<string>cdhash H"7ac30f72a9932e644a4799b4802352bd102fe01e"</string>
 		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
@@ -44,7 +53,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			qR/Snt2LHDt9K04v2ivmjCVVwtIh0VaWADbBas3OAt0=
+			zbJQm/bLQX4tAWgQHYm/hDyr0qJAObinlbSBmkup/yE=
 			</data>
 		</dict>
 	</dict>

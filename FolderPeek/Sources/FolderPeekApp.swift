@@ -65,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 struct FolderPeekApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("appearanceMode") private var appearanceMode = PreviewAppearanceMode.system.rawValue
+    @StateObject private var updaterController = UpdaterController()
 
     var body: some Scene {
         WindowGroup("Folder Peek", id: "main") {
@@ -74,7 +75,7 @@ struct FolderPeekApp: App {
         .windowStyle(.titleBar)
 
         MenuBarExtra {
-            MenuBarContent()
+            MenuBarContent(updaterController: updaterController)
         } label: {
             if let icon = Self.menuBarIcon {
                 Image(nsImage: icon)
@@ -107,6 +108,7 @@ private extension PreviewAppearanceMode {
 private struct MenuBarContent: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
+    let updaterController: UpdaterController
 
     var body: some View {
         Button("Abrir Folder Peek") {
@@ -120,6 +122,13 @@ private struct MenuBarContent: View {
 
         Button("Abrir Ajustes de Extensoes") {
             AppActions.openQuickLookExtensionsSettings()
+        }
+
+        Divider()
+
+        Button("Verificar atualizacoes…") {
+            updaterController.checkForUpdates()
+            NSApp.activate(ignoringOtherApps: true)
         }
 
         Divider()

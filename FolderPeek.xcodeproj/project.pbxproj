@@ -25,10 +25,12 @@
 		100000000000000000000123 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000023 /* PreferencesView.swift */; };
 		100000000000000000000124 /* AppActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000026 /* AppActions.swift */; };
 		100000000000000000000125 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000027 /* Assets.xcassets */; };
+		100000000000000000000126 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000028 /* UpdaterController.swift */; };
 		100000000000000000000141 /* PreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000041 /* PreviewViewController.swift */; };
 		100000000000000000000161 /* FolderScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000061 /* FolderScannerTests.swift */; };
 		100000000000000000000162 /* ArchiveScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000062 /* ArchiveScannerTests.swift */; };
 		100000000000000000000163 /* FormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000063 /* FormatterTests.swift */; };
+		100000000000000000000164 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 100000000000000000000B02 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +115,7 @@
 		100000000000000000000025 /* FolderPeek.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FolderPeek.entitlements; sourceTree = "<group>"; };
 		100000000000000000000026 /* AppActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActions.swift; sourceTree = "<group>"; };
 		100000000000000000000027 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		100000000000000000000028 /* UpdaterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterController.swift; sourceTree = "<group>"; };
 		100000000000000000000031 /* FolderPeekCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FolderPeekCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		100000000000000000000032 /* FolderPeek.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FolderPeek.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		100000000000000000000033 /* FolderPeekQuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FolderPeekQuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,7 +130,7 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		100000000000000000000601 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		100000000000000000000602 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000108 /* FolderPeekCore.framework in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000602 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000108 /* FolderPeekCore.framework in Frameworks */, 100000000000000000000164 /* Sparkle in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
 		100000000000000000000603 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000109 /* FolderPeekCore.framework in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
 		100000000000000000000604 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000010A /* FolderPeekCore.framework in Frameworks */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
@@ -147,7 +150,7 @@
 		100000000000000000000711 /* FolderPeekCore */ = {isa = PBXGroup; children = (100000000000000000000712 /* Sources */, ); path = FolderPeekCore; sourceTree = "<group>"; };
 		100000000000000000000712 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000005, 100000000000000000000006, 100000000000000000000007, ); path = Sources; sourceTree = "<group>"; };
 		100000000000000000000721 /* FolderPeek */ = {isa = PBXGroup; children = (100000000000000000000722 /* Sources */, 100000000000000000000723 /* Resources */, ); path = FolderPeek; sourceTree = "<group>"; };
-		100000000000000000000722 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000021, 100000000000000000000022, 100000000000000000000023, 100000000000000000000026, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000722 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000021, 100000000000000000000022, 100000000000000000000023, 100000000000000000000026, 100000000000000000000028, ); path = Sources; sourceTree = "<group>"; };
 		100000000000000000000723 /* Resources */ = {isa = PBXGroup; children = (100000000000000000000024, 100000000000000000000025, 100000000000000000000027, ); path = Resources; sourceTree = "<group>"; };
 		100000000000000000000741 /* FolderPeekQuickLookExtension */ = {isa = PBXGroup; children = (100000000000000000000742 /* Sources */, 100000000000000000000743 /* Resources */, ); path = FolderPeekQuickLookExtension; sourceTree = "<group>"; };
 		100000000000000000000742 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000041, ); path = Sources; sourceTree = "<group>"; };
@@ -186,6 +189,9 @@
 			buildRules = ();
 			dependencies = (100000000000000000000206 /* PBXTargetDependency */, 100000000000000000000207 /* PBXTargetDependency */, );
 			name = FolderPeek;
+			packageProductDependencies = (
+				100000000000000000000B02 /* Sparkle */,
+			);
 			productName = FolderPeek;
 			productReference = 100000000000000000000032 /* FolderPeek.app */;
 			productType = "com.apple.product-type.application";
@@ -226,6 +232,9 @@
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 100000000000000000000799 /* Products */;
+			packageReferences = (
+				100000000000000000000B01 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (100000000000000000000401, 100000000000000000000402, 100000000000000000000403, 100000000000000000000404, );
@@ -238,7 +247,7 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		100000000000000000000901 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000101, 100000000000000000000102, 100000000000000000000103, 100000000000000000000104, 100000000000000000000105, 100000000000000000000106, 100000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
-		100000000000000000000902 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000121, 100000000000000000000122, 100000000000000000000123, 100000000000000000000124, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000902 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000121, 100000000000000000000122, 100000000000000000000123, 100000000000000000000124, 100000000000000000000126 /* UpdaterController.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
 		100000000000000000000903 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000141, ); runOnlyForDeploymentPostprocessing = 0; };
 		100000000000000000000904 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000161, 100000000000000000000162, 100000000000000000000163, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
@@ -270,6 +279,24 @@
 		100000000000000000000803 /* Build configuration list for PBXNativeTarget "FolderPeek" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A31, 100000000000000000000A32, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		100000000000000000000804 /* Build configuration list for PBXNativeTarget "FolderPeekCoreTests" */ = {isa = XCConfigurationList; buildConfigurations = (100000000000000000000A41, 100000000000000000000A42, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
+/* Begin XCRemoteSwiftPackageReference section */
+		100000000000000000000B01 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		100000000000000000000B02 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 100000000000000000000B01 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 100000000000000000000300 /* Project object */;
 }

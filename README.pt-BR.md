@@ -41,8 +41,38 @@ Você pode instalar de duas formas:
 ## Testes
 
 ```sh
-xcodebuild -project FolderPeek.xcodeproj -target FolderPeekCoreTests -configuration Debug CODE_SIGNING_ALLOWED=NO test
+xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration Debug CODE_SIGNING_ALLOWED=NO test
 ```
+
+## Atualizacoes automaticas (Sparkle)
+
+O Folder Peek agora usa Sparkle para atualizacao in-app (canal estavel).
+
+- Feed configurado no `Info.plist`: `https://github.com/alisoncardosoo/FolderPeek/releases/latest/download/appcast.xml`
+- Acao no menu: `Verificar atualizacoes…`
+- Checagem automatica: ativa 1x por dia (`SUScheduledCheckInterval=86400`)
+
+### Configuracao inicial (uma vez)
+
+1. Gere as chaves do Sparkle no seu Mac:
+   ```sh
+   /path/to/generate_keys
+   ```
+2. Copie a chave publica e substitua `SUPublicEDKey` em `FolderPeek/Resources/Info.plist`.
+3. Mantenha a chave privada fora do git (keychain local ou secret no CI).
+
+### Fluxo de release (N -> N+1)
+
+1. Atualize a versao do app:
+   - `CFBundleShortVersionString`
+   - `CFBundleVersion`
+2. Gere build/arquivo assinado do app (`.app`) e empacote como `.zip` ou `.dmg`.
+3. Gere entrada e assinatura do appcast com as ferramentas do Sparkle (`generate_appcast`).
+4. Publique os assets no GitHub Releases.
+5. Envie o `appcast.xml` gerado como asset com nome `appcast.xml`.
+6. Valide o update partindo de uma versao antiga instalada.
+
+Template de appcast: `docs/sparkle/appcast.xml`.
 
 ## Habilitar a extensão
 
