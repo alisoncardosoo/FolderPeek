@@ -48,7 +48,7 @@ xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration D
 
 O Folder Peek agora usa Sparkle para atualizacao in-app (canal estavel).
 
-- Feed configurado no `Info.plist`: `https://github.com/alisoncardosoo/FolderPeek/releases/latest/download/appcast.xml`
+- Feed configurado no `Info.plist`: `https://raw.githubusercontent.com/alisoncardosoo/FolderPeek/main/docs/sparkle/appcast.xml`
 - Acao no menu: `Verificar atualizacoes…`
 - Checagem automatica: ativa 1x por dia (`SUScheduledCheckInterval=86400`)
 

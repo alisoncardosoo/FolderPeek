@@ -78,7 +78,7 @@ struct FolderPeekApp: App {
 
     var body: some Scene {
         WindowGroup("Folder Peek", id: "main") {
-            ContentView()
+            ContentView(updaterController: updaterController)
                 .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
                 .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenMainWindow)) { _ in
                     openMainWindow()

@@ -46,6 +46,7 @@ private enum AppTab: CaseIterable {
 // MARK: - Root View
 
 struct ContentView: View {
+    let updaterController: UpdaterController
     @State private var selectedTab: AppTab = .home
     @AppStorage("fontSize")       private var fontSize       = PreviewPreferences.default.fontSize
     @AppStorage("appearanceMode") private var appearanceMode = PreviewPreferences.default.appearanceMode.rawValue
@@ -139,6 +140,7 @@ struct ContentView: View {
             HomeTab(onDonateTap: { selectedTab = .donation })
         case .settings:
             SettingsTab(
+                updaterController: updaterController,
                 fontSize: $fontSize,
                 appearanceMode: $appearanceMode,
                 showHiddenFiles: $showHiddenFiles,
@@ -272,6 +274,7 @@ private struct HomeTab: View {
 // MARK: - Settings Tab
 
 private struct SettingsTab: View {
+    let updaterController: UpdaterController
     @Binding var fontSize: Double
     @Binding var appearanceMode: String
     @Binding var showHiddenFiles: Bool
@@ -283,6 +286,7 @@ private struct SettingsTab: View {
             VStack(alignment: .leading, spacing: 20) {
                 appearanceSection
                 behaviorSection
+                updatesSection
             }
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -335,6 +339,39 @@ private struct SettingsTab: View {
                 }
             }
         }
+    }
+
+    private var updatesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            PeekSectionLabel(icon: "arrow.triangle.2.circlepath", title: "Atualizacoes")
+            PeekCard {
+                PeekRow(label: "Versao instalada", icon: "tag.fill") {
+                    Text(installedVersion)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+                Divider()
+                Button("Verificar atualizacoes…") {
+                    updaterController.checkForUpdates()
+                }
+                .buttonStyle(.borderedProminent)
+
+                if let releaseNotesURL {
+                    Link("Abrir release notes", destination: releaseNotesURL)
+                        .font(.caption)
+                }
+            }
+        }
+    }
+
+    private var installedVersion: String {
+        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+        return "\(shortVersion) (\(build))"
+    }
+
+    private var releaseNotesURL: URL? {
+        URL(string: "https://github.com/alisoncardosoo/FolderPeek/releases")
     }
 }
 

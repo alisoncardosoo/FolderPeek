@@ -27,7 +27,7 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://github.com/alisoncardosoo/FolderPeek/releases/latest/download/appcast.xml</string>
+	<string>https://raw.githubusercontent.com/alisoncardosoo/FolderPeek/main/docs/sparkle/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>YQtU5JWQhD6Yvn5cWzer1qxq+orYTvo/p8wvOW182hY=</string>
 	<key>SUScheduledCheckInterval</key>
