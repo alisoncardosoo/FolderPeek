@@ -167,13 +167,14 @@ private struct HomeTab: View {
                 extensionStatusCard
                 appLocationCard
                 activationStepsCard
+                bandejaCard
                 donationCTA
             }
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom) {
-            Text("FolderPeek v1.1")
+            Text("FolderPeek v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .frame(maxWidth: .infinity)
@@ -248,6 +249,28 @@ private struct HomeTab: View {
         }
     }
 
+    private var bandejaCard: some View {
+        PeekCard {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "tray.and.arrow.down.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.blue)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Bandeja Temporária")
+                        .font(.headline)
+                    Text("Reúna arquivos de qualquer app e transfira para uma pasta com um clique. Atalho: ⌃⌥Space.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Button("Abrir") {
+                    NotificationCenter.default.post(name: .folderPeekOpenTransferTray, object: nil)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
     private var donationCTA: some View {
         PeekCard {
             HStack(alignment: .center, spacing: 14) {
@@ -281,11 +304,16 @@ private struct SettingsTab: View {
     @Binding var foldersFirst: Bool
     @Binding var itemLimit: Int
 
+    @AppStorage("autoShowOnDrag") private var autoShowOnDrag = true
+    @AppStorage("shelfHotkeyModifiers") private var hotkeyModifiers = 786432
+    @AppStorage("shelfHotkeyDisplayName") private var hotkeyDisplayName = "Space"
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 appearanceSection
                 behaviorSection
+                bandejaSection
                 updatesSection
             }
             .padding(24)
@@ -339,6 +367,41 @@ private struct SettingsTab: View {
                 }
             }
         }
+    }
+
+    private var bandejaSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            PeekSectionLabel(icon: "tray.and.arrow.down.fill", title: "Bandeja Temporária")
+            PeekCard {
+                PeekRow(label: "Abrir ao iniciar drag no Finder", icon: "hand.draw") {
+                    Toggle("", isOn: $autoShowOnDrag).labelsHidden()
+                }
+                Divider()
+                PeekRow(label: "Atalho de teclado", icon: "keyboard") {
+                    Text(hotkeyLabel)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+                Divider()
+                Button {
+                    NotificationCenter.default.post(name: .folderPeekOpenTransferTray, object: nil)
+                } label: {
+                    Label("Abrir bandeja agora", systemImage: "tray.and.arrow.down")
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+    }
+
+    private var hotkeyLabel: String {
+        let mods = NSEvent.ModifierFlags(rawValue: UInt(hotkeyModifiers != 0 ? hotkeyModifiers : 786432))
+        var parts: [String] = []
+        if mods.contains(.control) { parts.append("⌃") }
+        if mods.contains(.option) { parts.append("⌥") }
+        if mods.contains(.shift) { parts.append("⇧") }
+        if mods.contains(.command) { parts.append("⌘") }
+        parts.append(hotkeyDisplayName)
+        return parts.joined()
     }
 
     private var updatesSection: some View {
@@ -447,13 +510,21 @@ private struct AboutTab: View {
             Label("Versão", systemImage: "tag.fill")
                 .font(.headline)
             VStack(alignment: .leading, spacing: 4) {
-                Text("FolderPeek v1.1.0")
+                Text("FolderPeek v\(shortVersion)")
                     .font(.system(.body, design: .monospaced))
-                Text("Build 2  ·  macOS 14+")
+                Text("Build \(buildNumber)  ·  macOS 14+")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var shortVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+    }
+
+    private var buildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
     }
 }
 

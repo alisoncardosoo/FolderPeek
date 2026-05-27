@@ -14,6 +14,8 @@
 		100000000000000000000105 /* FolderScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000005 /* FolderScanner.swift */; };
 		100000000000000000000106 /* ArchiveScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000006 /* ArchiveScanner.swift */; };
 		100000000000000000000107 /* PreviewScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000007 /* PreviewScanner.swift */; };
+		10000000000000000000010E /* TransferDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000008 /* TransferDomain.swift */; };
+		10000000000000000000010F /* FileTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000009 /* FileTransferCoordinator.swift */; };
 		100000000000000000000108 /* FolderPeekCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; };
 		100000000000000000000109 /* FolderPeekCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; };
 		10000000000000000000010A /* FolderPeekCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100000000000000000000031 /* FolderPeekCore.framework */; };
@@ -26,11 +28,17 @@
 		100000000000000000000124 /* AppActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000026 /* AppActions.swift */; };
 		100000000000000000000125 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000027 /* Assets.xcassets */; };
 		100000000000000000000126 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000028 /* UpdaterController.swift */; };
+		100000000000000000000127 /* TransferTrayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000029 /* TransferTrayStore.swift */; };
+		100000000000000000000128 /* FinderDragMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000002A /* FinderDragMonitor.swift */; };
+		100000000000000000000129 /* GlobalHotKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000002B /* GlobalHotKeyMonitor.swift */; };
+		10000000000000000000012A /* TransferTrayWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000002C /* TransferTrayWindowView.swift */; };
 		100000000000000000000141 /* PreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000041 /* PreviewViewController.swift */; };
 		100000000000000000000161 /* FolderScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000061 /* FolderScannerTests.swift */; };
 		100000000000000000000162 /* ArchiveScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000062 /* ArchiveScannerTests.swift */; };
 		100000000000000000000163 /* FormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000063 /* FormatterTests.swift */; };
 		100000000000000000000164 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 100000000000000000000B02 /* Sparkle */; };
+		100000000000000000000165 /* TransferDomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000064 /* TransferDomainTests.swift */; };
+		100000000000000000000166 /* FileTransferCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000065 /* FileTransferCoordinatorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +116,8 @@
 		100000000000000000000005 /* FolderScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScanner.swift; sourceTree = "<group>"; };
 		100000000000000000000006 /* ArchiveScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveScanner.swift; sourceTree = "<group>"; };
 		100000000000000000000007 /* PreviewScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewScanner.swift; sourceTree = "<group>"; };
+		100000000000000000000008 /* TransferDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferDomain.swift; sourceTree = "<group>"; };
+		100000000000000000000009 /* FileTransferCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTransferCoordinator.swift; sourceTree = "<group>"; };
 		100000000000000000000021 /* FolderPeekApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPeekApp.swift; sourceTree = "<group>"; };
 		100000000000000000000022 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		100000000000000000000023 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
@@ -116,6 +126,10 @@
 		100000000000000000000026 /* AppActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActions.swift; sourceTree = "<group>"; };
 		100000000000000000000027 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		100000000000000000000028 /* UpdaterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterController.swift; sourceTree = "<group>"; };
+		100000000000000000000029 /* TransferTrayStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferTrayStore.swift; sourceTree = "<group>"; };
+		10000000000000000000002A /* FinderDragMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderDragMonitor.swift; sourceTree = "<group>"; };
+		10000000000000000000002B /* GlobalHotKeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyMonitor.swift; sourceTree = "<group>"; };
+		10000000000000000000002C /* TransferTrayWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferTrayWindowView.swift; sourceTree = "<group>"; };
 		100000000000000000000031 /* FolderPeekCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FolderPeekCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		100000000000000000000032 /* FolderPeek.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FolderPeek.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		100000000000000000000033 /* FolderPeekQuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FolderPeekQuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,6 +140,8 @@
 		100000000000000000000061 /* FolderScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScannerTests.swift; sourceTree = "<group>"; };
 		100000000000000000000062 /* ArchiveScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveScannerTests.swift; sourceTree = "<group>"; };
 		100000000000000000000063 /* FormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatterTests.swift; sourceTree = "<group>"; };
+		100000000000000000000064 /* TransferDomainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferDomainTests.swift; sourceTree = "<group>"; };
+		100000000000000000000065 /* FileTransferCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTransferCoordinatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,14 +164,15 @@
 			sourceTree = "<group>";
 		};
 		100000000000000000000711 /* FolderPeekCore */ = {isa = PBXGroup; children = (100000000000000000000712 /* Sources */, ); path = FolderPeekCore; sourceTree = "<group>"; };
-		100000000000000000000712 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000005, 100000000000000000000006, 100000000000000000000007, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000712 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000005, 100000000000000000000006, 100000000000000000000007, 100000000000000000000008, 100000000000000000000009, ); path = Sources; sourceTree = "<group>"; };
 		100000000000000000000721 /* FolderPeek */ = {isa = PBXGroup; children = (100000000000000000000722 /* Sources */, 100000000000000000000723 /* Resources */, ); path = FolderPeek; sourceTree = "<group>"; };
-		100000000000000000000722 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000021, 100000000000000000000022, 100000000000000000000023, 100000000000000000000026, 100000000000000000000028, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000722 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000021, 100000000000000000000022, 100000000000000000000023, 100000000000000000000026, 100000000000000000000028, 100000000000000000000724 /* TransferTray */, ); path = Sources; sourceTree = "<group>"; };
+		100000000000000000000724 /* TransferTray */ = {isa = PBXGroup; children = (100000000000000000000029, 10000000000000000000002A, 10000000000000000000002B, 10000000000000000000002C, ); path = TransferTray; sourceTree = "<group>"; };
 		100000000000000000000723 /* Resources */ = {isa = PBXGroup; children = (100000000000000000000024, 100000000000000000000025, 100000000000000000000027, ); path = Resources; sourceTree = "<group>"; };
 		100000000000000000000741 /* FolderPeekQuickLookExtension */ = {isa = PBXGroup; children = (100000000000000000000742 /* Sources */, 100000000000000000000743 /* Resources */, ); path = FolderPeekQuickLookExtension; sourceTree = "<group>"; };
 		100000000000000000000742 /* Sources */ = {isa = PBXGroup; children = (100000000000000000000041, ); path = Sources; sourceTree = "<group>"; };
 		100000000000000000000743 /* Resources */ = {isa = PBXGroup; children = (100000000000000000000042, 100000000000000000000043, ); path = Resources; sourceTree = "<group>"; };
-		100000000000000000000761 /* FolderPeekCoreTests */ = {isa = PBXGroup; children = (100000000000000000000061, 100000000000000000000062, 100000000000000000000063, ); path = FolderPeekCoreTests; sourceTree = "<group>"; };
+		100000000000000000000761 /* FolderPeekCoreTests */ = {isa = PBXGroup; children = (100000000000000000000061, 100000000000000000000062, 100000000000000000000063, 100000000000000000000064, 100000000000000000000065, ); path = FolderPeekCoreTests; sourceTree = "<group>"; };
 		100000000000000000000799 /* Products */ = {isa = PBXGroup; children = (100000000000000000000031, 100000000000000000000032, 100000000000000000000033, 100000000000000000000034, ); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
@@ -246,10 +263,10 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		100000000000000000000901 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000101, 100000000000000000000102, 100000000000000000000103, 100000000000000000000104, 100000000000000000000105, 100000000000000000000106, 100000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
-		100000000000000000000902 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000121, 100000000000000000000122, 100000000000000000000123, 100000000000000000000124, 100000000000000000000126 /* UpdaterController.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000901 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000101, 100000000000000000000102, 100000000000000000000103, 100000000000000000000104, 100000000000000000000105, 100000000000000000000106, 100000000000000000000107, 10000000000000000000010E, 10000000000000000000010F, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000902 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000121, 100000000000000000000122, 100000000000000000000123, 100000000000000000000124, 100000000000000000000126 /* UpdaterController.swift in Sources */, 100000000000000000000127, 100000000000000000000128, 100000000000000000000129, 10000000000000000000012A, ); runOnlyForDeploymentPostprocessing = 0; };
 		100000000000000000000903 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000141, ); runOnlyForDeploymentPostprocessing = 0; };
-		100000000000000000000904 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000161, 100000000000000000000162, 100000000000000000000163, ); runOnlyForDeploymentPostprocessing = 0; };
+		100000000000000000000904 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000161, 100000000000000000000162, 100000000000000000000163, 100000000000000000000165, 100000000000000000000166, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */

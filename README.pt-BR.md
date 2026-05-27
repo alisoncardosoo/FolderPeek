@@ -1,97 +1,231 @@
+<div align="center">
+  <img src="./FolderPeek/Resources/Assets.xcassets/FolderPeekLogo.imageset/logo.png" width="120" alt="Logo do Folder Peek" />
+
 # Folder Peek
 
-O Folder Peek é um app gratuito de Quick Look para macOS que permite visualizar o conteúdo de pastas e arquivos compactados diretamente no Finder.
+### Pré-visualize pastas e arquivos compactados no Quick Look do macOS
 
-Guia principal: este README em PT-BR.
+![Status](https://img.shields.io/badge/status-ativo-success)
+![Plataforma](https://img.shields.io/badge/plataforma-macOS%2014%2B-black)
+![Swift](https://img.shields.io/badge/Swift-6.0-orange)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-1.3-blue)
+![Stars](https://img.shields.io/github/stars/alisoncardosoo/FolderPeek?style=social)
+![Forks](https://img.shields.io/github/forks/alisoncardosoo/FolderPeek?style=social)
+![Issues](https://img.shields.io/github/issues/alisoncardosoo/FolderPeek)
+![Last Commit](https://img.shields.io/github/last-commit/alisoncardosoo/FolderPeek)
+![License](https://img.shields.io/badge/license-n%C3%A3o%20definida-lightgrey)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
 
-## O que ele inclui
+</div>
 
-- App principal nativo em SwiftUI para macOS.
-- Extensão de Quick Look para pré-visualização de pastas.
-- Tabela no estilo Finder com nome, tipo, tamanho, data de modificação e caminho relativo.
-- Framework compartilhado e testável `FolderPeekCore`.
-- Listagem de ZIP por meio de um leitor seguro de central directory no core compartilhado, pronto para ser reativado quando os UTTypes de archive forem finalizados.
+## 📚 Índice
 
-## Doação
+- [Sobre](#-sobre)
+- [Status do projeto](#-status-do-projeto)
+- [Funcionalidades](#-funcionalidades)
+- [Demonstração visual](#-demonstração-visual)
+- [Acesso ao projeto](#-acesso-ao-projeto)
+- [Instalação e uso](#-instalação-e-uso)
+- [Tecnologias utilizadas](#-tecnologias-utilizadas)
+- [Arquitetura](#-arquitetura)
+- [Roadmap](#-roadmap)
+- [Contribuição](#-contribuição)
+- [Autor](#-autor)
+- [Licença](#-licença)
 
-Se o Folder Peek te ajudou, você pode apoiar o projeto com PIX:
+## 🚀 Sobre
 
-- Chave PIX: `d6d63f9b-5e12-4b96-8f33-d2b83a23e86d`
-- O app também exibe uma aba dedicada de doação com QR code e botão de copiar.
+O **Folder Peek** é um app gratuito para macOS que adiciona uma experiência de preview rica no Finder via **Quick Look**. Ele resolve o problema de navegação rápida em estruturas de pastas e arquivos compactados, sem precisar abrir vários apps ou extrair conteúdo manualmente.
 
-## Onde encontrar o app gerado
+O projeto é voltado para pessoas desenvolvedoras e usuários avançados de macOS que precisam inspecionar conteúdo com velocidade, contexto e segurança.
 
-O app gerado também fica versionado no repositório em:
+## 📌 Status do projeto
 
-```text
-dist/FolderPeek.app
+🟢 **Ativo / Em evolução contínua**
+
+- Versão atual do app: **1.3 (build 4)**
+- Canal de atualização: **Sparkle (estável)**
+
+## 🔨 Funcionalidades
+
+### App principal (SwiftUI)
+
+- Interface nativa para macOS.
+- Abertura rápida do app instalado e atalhos para ajustes de extensão.
+- Aba de doação com PIX, QR Code e ação de copiar chave.
+- Chave PIX do projeto: `d6d63f9b-5e12-4b96-8f33-d2b83a23e86d`.
+
+### Bandeja temporária (Dropover/Yoink-style)
+
+- Janela flutuante única (sem abas) para segurar múltiplos arquivos temporariamente.
+- Layout simples em grade, focado em arrastar itens para dentro e para fora.
+- Gatilho automático ao detectar arrasto de arquivos no Finder.
+- A bandeja abre colada ao lado direito do Finder quando possível.
+- Atalho global padrão para abrir/ocultar: `Control + Option + Space`.
+- Observação V1: selecionar múltiplos arquivos sem arrastar não abre a bandeja automaticamente.
+
+### Extensão Quick Look
+
+- Preview de pastas direto no Finder.
+- Suporte a tipos: `public.directory`, `public.folder`, ZIP/TAR/GZIP/7z/RAR (UTTypes declarados).
+
+### Núcleo compartilhado (`FolderPeekCore`)
+
+- Tabela estilo Finder com: nome, tipo, tamanho, modificação e caminho relativo.
+- Leitura segura de diretório central para listagem de ZIP.
+- Base desacoplada para testes e evolução incremental.
+
+### Build e distribuição
+
+- Script único para build, assinatura ad-hoc, cópia para `dist/` e instalação em `/Applications`.
+- Re-registro da extensão para reduzir fricção na validação local.
+
+## 🖼 Demonstração visual
+
+<div align="center">
+  <img src="./FolderPeek/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" width="180" alt="Ícone do Folder Peek" />
+</div>
+
+- App bundle gerado no repositório: `dist/FolderPeek.app`
+- App instalado para uso no sistema: `/Applications/FolderPeek.app`
+
+## 🌐 Acesso ao projeto
+
+- Repositório: [github.com/alisoncardosoo/FolderPeek](https://github.com/alisoncardosoo/FolderPeek)
+- Feed de atualização Sparkle: [docs/sparkle/appcast.xml](./docs/sparkle/appcast.xml)
+- Build local principal: `./script/build_and_run.sh`
+
+## ⚙️ Instalação e uso
+
+### 1) Clonar repositório
+
+```bash
+git clone https://github.com/alisoncardosoo/FolderPeek.git
+cd FolderPeek
 ```
 
-## Como instalar
+### 2) Build e instalação automática
 
-Você pode instalar de duas formas:
-
-1. Copie `dist/FolderPeek.app` para `/Applications`.
-2. Ou execute o script abaixo, que instala e abre a versão do usuário em `/Applications/FolderPeek.app`:
-
-```sh
+```bash
 ./script/build_and_run.sh
 ```
 
-## Testes
+### 3) Instalação manual (alternativa)
 
-```sh
+1. Gere o app em `dist/FolderPeek.app`.
+2. Copie para `/Applications/FolderPeek.app`.
+3. Abra o app uma vez.
+
+### 4) Ativar extensão Quick Look
+
+1. Abrir **Ajustes do Sistema**.
+2. Ir em **Geral > Itens de Início e Extensões > Quick Look**.
+3. Ativar **Folder Peek Quick Look Extension**.
+4. No Finder, selecionar uma pasta e pressionar **Espaço**.
+
+### 5) Rodar testes
+
+```bash
 xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration Debug CODE_SIGNING_ALLOWED=NO test
 ```
 
-## Atualizacoes automaticas (Sparkle)
+### 6) Usar a bandeja temporária
 
-O Folder Peek agora usa Sparkle para atualizacao in-app (canal estavel).
+1. No Finder, comece a arrastar arquivos para abrir a bandeja automaticamente.
+2. Alternativa manual: pressione `Control + Option + Space`.
+3. Solte os arquivos na bandeja.
+4. Arraste os itens da bandeja para a pasta desejada no Finder.
+5. A bandeja mantém apenas uma instância por vez (sem múltiplas janelas/abas).
 
-- Feed configurado no `Info.plist`: `https://raw.githubusercontent.com/alisoncardosoo/FolderPeek/main/docs/sparkle/appcast.xml`
-- Acao no menu: `Verificar atualizacoes…`
-- Checagem automatica: ativa 1x por dia (`SUScheduledCheckInterval=86400`)
+### 7) Atualizações in-app com Sparkle
 
-### Configuracao inicial (uma vez)
+- Feed configurado em `FolderPeek/Resources/Info.plist`.
+- Verificação automática diária (`SUScheduledCheckInterval=86400`).
+- Chave pública já configurada em `SUPublicEDKey`.
 
-1. Gere as chaves do Sparkle no seu Mac:
-   ```sh
+Configuração inicial (uma vez):
+
+1. Gere as chaves no seu Mac:
+   ```bash
    /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account folderpeek
    ```
-2. Valide a chave publica gerada:
-   ```sh
+2. Valide a chave pública gerada:
+   ```bash
    /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account folderpeek -p
    ```
-3. Substitua `SUPublicEDKey` em `FolderPeek/Resources/Info.plist` pela chave real.
-4. Nunca publique com placeholder:
-   - Invalido: `REPLACE_WITH_SPARKLE_PUBLIC_ED25519_KEY`
-   - Obrigatorio: chave real gerada
-5. Mantenha a chave privada fora do git (keychain local ou secret no CI).
+3. Atualize `SUPublicEDKey` em `FolderPeek/Resources/Info.plist`.
+4. Nunca publique com placeholder (`REPLACE_WITH_SPARKLE_PUBLIC_ED25519_KEY`).
+5. Mantenha a chave privada fora do Git (keychain local ou segredo no CI).
 
-### Fluxo de release (N -> N+1)
+Fluxo de release resumido:
 
-1. Atualize a versao do app:
-   - `CFBundleShortVersionString`
-   - `CFBundleVersion`
-2. Gere build/arquivo assinado do app (`.app`) e empacote como `.zip` ou `.dmg`.
-3. Assine o pacote de update e gere metadados do appcast com Sparkle:
-   ```sh
-   /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update --account folderpeek dist/FolderPeek.zip
-   /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast dist
-   ```
-4. Publique os assets no GitHub Releases.
-5. Envie o `appcast.xml` gerado como asset com nome `appcast.xml`.
-6. Valide o update partindo de uma versao antiga instalada.
+```bash
+/Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update --account folderpeek dist/FolderPeek.zip
+/Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast dist
+```
 
-Template de appcast: `docs/sparkle/appcast.xml` (com `sparkle:edSignature` real e `length` correto).
+## 🧰 Tecnologias utilizadas
 
-## Habilitar a extensão
+| Camada | Tecnologias |
+|---|---|
+| App Desktop | Swift, SwiftUI, AppKit |
+| Preview Finder | Quick Look Preview Extension |
+| Core compartilhado | FolderPeekCore (framework interno testável) |
+| Build e distribuição | xcodebuild, codesign, ditto, pluginkit |
+| Atualizações | Sparkle |
 
-1. Abra o Folder Peek uma vez.
-2. Use o ícone da barra de menu do Folder Peek e escolha **Mostrar app no Finder** se precisar localizar o app.
-3. Abra os Ajustes do Sistema.
-4. Vá em Geral > Itens de Início e Extensões > Quick Look.
-5. Ative a extensão Folder Peek Quick Look Extension.
-6. No Finder, selecione uma pasta e pressione Espaço.
+## 🏗 Arquitetura
 
-O app também possui um botão para abrir direto os ajustes de Extensões.
+```text
+📦 Folder Preview
+ ┣ 📂 FolderPeek                       # App macOS (SwiftUI)
+ ┣ 📂 FolderPeekQuickLookExtension     # Extensão Quick Look
+ ┣ 📂 FolderPeekCore                   # Núcleo compartilhado e testável
+ ┣ 📂 FolderPeekCoreTests              # Testes do core
+ ┣ 📂 script                           # Scripts de build/instalação
+ ┣ 📂 docs                             # Appcast e docs de release
+ ┗ 📂 dist                             # App bundle gerado
+```
+
+## 🛣 Roadmap
+
+- [x] Preview de pastas direto no Finder
+- [x] Listagem de ZIP via core compartilhado
+- [x] Fluxo de build e instalação automatizado
+- [x] Atualização in-app com Sparkle
+- [ ] Screenshots/GIF da experiência completa
+- [ ] Pipeline de release totalmente automatizado via CI
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto.
+2. Crie uma branch descritiva: `feat/minha-melhoria`.
+3. Commit com contexto claro.
+4. Abra um Pull Request com descrição objetiva de problema/solução.
+
+Antes de abrir PR:
+
+- Rode testes locais.
+- Evite hardcode de segredos.
+- Mantenha mudanças focadas em um objetivo por PR.
+
+## 👤 Autor
+
+<div align="center">
+  <img src="https://github.com/alisoncardosoo.png" width="96" style="border-radius:50%;" alt="Avatar de Alison Cardoso" />
+
+**Alison Cardoso**
+
+[GitHub](https://github.com/alisoncardosoo)
+</div>
+
+## 📄 Licença
+
+Este repositório ainda não possui arquivo `LICENSE` versionado.
+Até uma definição explícita, considere **todos os direitos reservados** ao autor.
+
+---
+
+<div align="center">
+  Feito para acelerar a inspeção de arquivos no macOS com uma experiência nativa, simples e eficiente.
+</div>
