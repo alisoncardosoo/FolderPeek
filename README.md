@@ -57,10 +57,17 @@ Folder Peek now uses Sparkle for in-app updates (stable channel).
 
 1. Generate Sparkle keys on your Mac:
    ```sh
-   /path/to/generate_keys
+   /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account folderpeek
    ```
-2. Copy the public key and replace `SUPublicEDKey` in `FolderPeek/Resources/Info.plist`.
-3. Keep the private key out of git (local keychain or CI secret).
+2. Verify the public key:
+   ```sh
+   /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account folderpeek -p
+   ```
+3. Set `SUPublicEDKey` in `FolderPeek/Resources/Info.plist` with this key.
+4. Never ship with placeholder keys:
+   - Invalid: `REPLACE_WITH_SPARKLE_PUBLIC_ED25519_KEY`
+   - Required: real generated key
+5. Keep the private key out of git (local keychain or CI secret).
 
 ### Release workflow (N -> N+1)
 
@@ -68,12 +75,16 @@ Folder Peek now uses Sparkle for in-app updates (stable channel).
    - `CFBundleShortVersionString`
    - `CFBundleVersion`
 2. Build and archive the signed app (`.app`), then package as `.zip` or `.dmg`.
-3. Generate Sparkle appcast entry and signature with Sparkle tools (`generate_appcast`).
+3. Sign update archive and generate appcast metadata with Sparkle tools:
+   ```sh
+   /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update --account folderpeek dist/FolderPeek.zip
+   /Users/alisoncardoso/Library/Developer/Xcode/DerivedData/FolderPeek-djcatetzbxrspeaxlcoailknpaet/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast dist
+   ```
 4. Publish release assets on GitHub Releases.
 5. Upload the generated `appcast.xml` as a release asset named `appcast.xml`.
 6. Validate update flow from an older installed version.
 
-Template appcast file: `docs/sparkle/appcast.xml`.
+Template appcast file: `docs/sparkle/appcast.xml` (must contain real `sparkle:edSignature` and correct `length`).
 
 ## Enable the extension
 

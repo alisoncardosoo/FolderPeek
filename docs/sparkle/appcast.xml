@@ -7,14 +7,14 @@
     <language>en</language>
     <item>
       <title>Version 1.3</title>
-      <pubDate>Tue, 26 May 2026 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 27 May 2026 00:00:00 +0000</pubDate>
       <enclosure
         url="https://github.com/alisoncardosoo/FolderPeek/releases/download/v1.3/FolderPeek.zip"
         sparkle:version="4"
         sparkle:shortVersionString="1.3"
-        length="0"
+        length="4366734"
         type="application/octet-stream"
-        sparkle:edSignature="REPLACE_WITH_SPARKLE_SIGNATURE" />
+        sparkle:edSignature="dz4CMKd7BYuQ5ayvGAwHWsXvff4xQokewNoYj2dLSBl8Pa9bivx+qjIvIobyVQ7hDcyGQBnmVlCDwnr0dmYTDw==" />
     </item>
   </channel>
 </rss>

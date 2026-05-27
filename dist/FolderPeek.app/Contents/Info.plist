@@ -57,7 +57,7 @@
 	<key>SUFeedURL</key>
 	<string>https://github.com/alisoncardosoo/FolderPeek/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>REPLACE_WITH_SPARKLE_PUBLIC_ED25519_KEY</string>
+	<string>YQtU5JWQhD6Yvn5cWzer1qxq+orYTvo/p8wvOW182hY=</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
 </dict>
