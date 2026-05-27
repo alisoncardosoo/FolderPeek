@@ -83,7 +83,7 @@ struct FolderPeekApp: App {
         }
 
         Settings {
-            PreferencesView()
+            PreferencesView(updaterController: updaterController)
                 .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
         }
     }
