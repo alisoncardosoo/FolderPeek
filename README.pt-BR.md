@@ -86,6 +86,14 @@ O projeto é voltado para pessoas desenvolvedoras e usuários avançados de macO
   <img src="./FolderPeek/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" width="180" alt="Ícone do Folder Peek" />
 </div>
 
+<div align="center">
+  <img src="./docs/assets/folderpeek-window-2026-05-27-1953.png" width="860" alt="Janela principal do Folder Peek" />
+</div>
+
+<div align="center">
+  <img src="./docs/assets/lg-fhd-area-2026-05-27-1949.png" width="860" alt="Preview de pasta no Finder com estilo visual do Folder Peek" />
+</div>
+
 - App bundle gerado no repositório: `dist/FolderPeek.app`
 - App instalado para uso no sistema: `/Applications/FolderPeek.app`
 

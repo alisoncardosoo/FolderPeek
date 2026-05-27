@@ -86,6 +86,14 @@ Portuguese guide (primary): [README.pt-BR.md](./README.pt-BR.md)
   <img src="./FolderPeek/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" width="180" alt="Folder Peek app icon" />
 </div>
 
+<div align="center">
+  <img src="./docs/assets/folderpeek-window-2026-05-27-1953.png" width="860" alt="Folder Peek main window" />
+</div>
+
+<div align="center">
+  <img src="./docs/assets/lg-fhd-area-2026-05-27-1949.png" width="860" alt="Folder preview in Finder with Folder Peek visual style" />
+</div>
+
 - Generated app bundle in repo: `dist/FolderPeek.app`
 - Installed app path: `/Applications/FolderPeek.app`
 
