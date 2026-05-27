@@ -2,6 +2,10 @@ import SwiftUI
 import AppKit
 import FolderPeekCore
 
+extension Notification.Name {
+    static let folderPeekOpenMainWindow = Notification.Name("FolderPeekOpenMainWindow")
+}
+
 fileprivate func scaledAppIcon(named name: String, size: NSSize) -> NSImage? {
     guard let image = NSImage(named: name), let copy = image.copy() as? NSImage else {
         return nil
@@ -14,7 +18,11 @@ fileprivate func scaledAppIcon(named name: String, size: NSSize) -> NSImage? {
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        // Abrir com janela principal visível quando o app é iniciado.
+        NSApp.setActivationPolicy(.regular)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            NotificationCenter.default.post(name: .folderPeekOpenMainWindow, object: nil)
+        }
 
         let nc = NotificationCenter.default
         nc.addObserver(forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main) { _ in
@@ -66,16 +74,20 @@ struct FolderPeekApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("appearanceMode") private var appearanceMode = PreviewAppearanceMode.system.rawValue
     @StateObject private var updaterController = UpdaterController()
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Scene {
         WindowGroup("Folder Peek", id: "main") {
             ContentView()
                 .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
+                .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenMainWindow)) { _ in
+                    openMainWindow()
+                }
         }
         .windowStyle(.titleBar)
 
         MenuBarExtra {
-            MenuBarContent(updaterController: updaterController)
+            MenuBarContent(updaterController: updaterController, openMainWindow: openMainWindow)
         } label: {
             if let icon = Self.menuBarIcon {
                 Image(nsImage: icon)
@@ -90,6 +102,12 @@ struct FolderPeekApp: App {
 
     private static var menuBarIcon: NSImage? {
         scaledAppIcon(named: "FolderPeekMenuBarIcon", size: NSSize(width: 18, height: 18))
+    }
+
+    private func openMainWindow() {
+        openWindow(id: "main")
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
 
@@ -106,14 +124,13 @@ private extension PreviewAppearanceMode {
 // MARK: - Menu Bar
 
 private struct MenuBarContent: View {
-    @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
     let updaterController: UpdaterController
+    let openMainWindow: () -> Void
 
     var body: some View {
         Button("Abrir Folder Peek") {
-            openWindow(id: "main")
-            NSApp.activate(ignoringOtherApps: true)
+            openMainWindow()
         }
 
         Button("Mostrar app no Finder") {
