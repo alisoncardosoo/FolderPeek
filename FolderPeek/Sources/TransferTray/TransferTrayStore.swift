@@ -22,16 +22,6 @@ final class TransferTrayStore: ObservableObject {
         var status: ItemStatus
     }
 
-    struct TransferRecord: Codable, Identifiable, Sendable {
-        let id: UUID
-        let date: Date
-        let operation: TransferOperation
-        let fileNames: [String]
-        let destinationName: String
-        let succeededCount: Int
-        let failedCount: Int
-    }
-
     @Published private(set) var items: [Item] = []
     @Published var operation: TransferOperation = .copy
     @Published private(set) var destinationURL: URL?
@@ -40,7 +30,6 @@ final class TransferTrayStore: ObservableObject {
     @Published var showMoveConfirmation = false
     @Published var transferProgress: Double = 0
     @Published var currentTransferName: String = ""
-    @Published private(set) var transferHistory: [TransferRecord] = []
 
     private var thumbnailCache: [URL: NSImage] = [:]
     private var thumbnailLoadingInProgress: Set<URL> = []
@@ -61,7 +50,6 @@ final class TransferTrayStore: ObservableObject {
         ensureTrayDirectoryExists()
         loadDestinationBookmark()
         loadPendingItems()
-        loadHistory()
     }
 
     var destinationPathText: String {
@@ -182,7 +170,7 @@ final class TransferTrayStore: ObservableObject {
         savePendingItems()
     }
 
-    func consumeItemAfterExternalDrop(sourceURL: URL) {
+    func consumeItemAfterExternalDrop(sourceURL: URL, destinationURL: URL? = nil) {
         let itemID = TransferItemCollection.canonicalPath(for: sourceURL)
         guard let index = items.firstIndex(where: { $0.id == itemID }) else {
             return
@@ -456,17 +444,6 @@ final class TransferTrayStore: ObservableObject {
 
         savePendingItems()
         sendCompletionNotification(succeeded: succeeded, failed: failed, destinationURL: destinationURL)
-
-        let record = TransferRecord(
-            id: UUID(),
-            date: Date(),
-            operation: operation,
-            fileNames: results.map { $0.sourceURL.lastPathComponent },
-            destinationName: destinationURL.lastPathComponent,
-            succeededCount: succeeded,
-            failedCount: failed
-        )
-        saveHistoryRecord(record)
     }
 
     // MARK: - Thumbnails
@@ -543,15 +520,6 @@ final class TransferTrayStore: ObservableObject {
         if !result.inserted.isEmpty {
             statusMessage = "\(result.inserted.count) item(ns) recuperado(s) da pasta Bandeja."
         }
-    }
-
-    // MARK: - History
-
-    private var historyFileURL: URL? {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
-            .first?
-            .appendingPathComponent("FolderPeek", isDirectory: true)
-            .appendingPathComponent("transfer-history.json")
     }
 
     private var trayDirectoryURL: URL? {
@@ -690,35 +658,6 @@ final class TransferTrayStore: ObservableObject {
                 return candidate
             }
             suffix += 1
-        }
-    }
-
-    private func loadHistory() {
-        guard let url = historyFileURL,
-              let data = try? Data(contentsOf: url),
-              let records = try? JSONDecoder().decode([TransferRecord].self, from: data) else {
-            return
-        }
-        transferHistory = records
-    }
-
-    private func saveHistoryRecord(_ record: TransferRecord) {
-        transferHistory.insert(record, at: 0)
-        if transferHistory.count > 100 {
-            transferHistory = Array(transferHistory.prefix(100))
-        }
-        guard let url = historyFileURL else { return }
-        let dir = url.deletingLastPathComponent()
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        if let data = try? JSONEncoder().encode(transferHistory) {
-            try? data.write(to: url, options: .atomic)
-        }
-    }
-
-    func clearHistory() {
-        transferHistory.removeAll()
-        if let url = historyFileURL {
-            try? FileManager.default.removeItem(at: url)
         }
     }
 

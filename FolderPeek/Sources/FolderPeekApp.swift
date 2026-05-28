@@ -69,6 +69,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         finderDragMonitor?.start()
 
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+
+        // Aguarda a janela principal aparecer antes de exibir o alerta de FDA
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            AppActions.checkAndPromptForFullDiskAccessIfNeeded()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

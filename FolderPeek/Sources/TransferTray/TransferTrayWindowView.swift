@@ -11,7 +11,6 @@ struct TransferTrayWindowView: View {
     let configureWindow: (NSWindow) -> Void
 
     @State private var isDropTarget = false
-    @State private var showingHistory = false
     @State private var selectedItemIDs: Set<String> = []
     @State private var selectionAnchorID: String?
 
@@ -61,15 +60,13 @@ struct TransferTrayWindowView: View {
         .ignoresSafeArea()
         .animation(.spring(response: 0.28, dampingFraction: 0.82), value: store.isProcessing)
         .animation(.easeInOut(duration: 0.18), value: store.statusMessage != nil)
-        .sheet(isPresented: $showingHistory) {
-            TransferHistoryView(store: store)
-        }
         .onReceive(NotificationCenter.default.publisher(for: transferTrayItemExportedNotification)) { notification in
             guard let sourceURL = notification.object as? URL else { return }
+            let destinationURL = notification.userInfo?["destinationURL"] as? URL
             let exportedItemID = TransferItemCollection.canonicalPath(for: sourceURL)
             selectedItemIDs.remove(exportedItemID)
             withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
-                store.consumeItemAfterExternalDrop(sourceURL: sourceURL)
+                store.consumeItemAfterExternalDrop(sourceURL: sourceURL, destinationURL: destinationURL)
             }
         }
         .onChange(of: store.items.map(\.id)) { _, itemIDs in
@@ -151,12 +148,6 @@ struct TransferTrayWindowView: View {
                     store.undoLastMove()
                 } label: {
                     Label("Desfazer último move", systemImage: "arrow.uturn.backward")
-                }
-
-                Button {
-                    showingHistory = true
-                } label: {
-                    Label("Ver histórico...", systemImage: "clock.arrow.circlepath")
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -611,94 +602,6 @@ private struct WindowDragBlocker: NSViewRepresentable {
     }
 }
 
-// MARK: - History Sheet
-
-private struct TransferHistoryView: View {
-    @ObservedObject var store: TransferTrayStore
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Text("Histórico de transferências")
-                    .font(.headline)
-                Spacer()
-                if !store.transferHistory.isEmpty {
-                    Button("Limpar") { store.clearHistory() }
-                        .foregroundStyle(.red)
-                        .buttonStyle(.plain)
-                        .font(.subheadline)
-                }
-                Button("Fechar") { dismiss() }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-
-            Divider()
-
-            if store.transferHistory.isEmpty {
-                VStack(spacing: 12) {
-                    Spacer()
-                    Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(size: 36, weight: .light))
-                        .foregroundStyle(.tertiary)
-                    Text("Nenhuma transferência registrada")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-            } else {
-                List(store.transferHistory) { record in
-                    HistoryRecordRow(record: record)
-                }
-                .listStyle(.plain)
-            }
-        }
-        .frame(width: 400, height: 480)
-    }
-}
-
-private struct HistoryRecordRow: View {
-    let record: TransferTrayStore.TransferRecord
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
-                Image(systemName: record.operation == .copy
-                      ? "doc.on.doc"
-                      : "arrow.right.doc.on.clipboard")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(record.destinationName)
-                    .font(.system(size: 12, weight: .semibold))
-                    .lineLimit(1)
-                Spacer()
-                Text(record.date, format: .dateTime.day().month(.abbreviated).hour().minute())
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-
-            Text("\(record.succeededCount) arquivo(s)"
-                 + (record.failedCount > 0 ? " · \(record.failedCount) falha(s)" : ""))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            if !record.fileNames.isEmpty {
-                let preview = record.fileNames.prefix(3).joined(separator: " · ")
-                    + (record.fileNames.count > 3 ? " · +\(record.fileNames.count - 3)" : "")
-                Text(preview)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
-        }
-        .padding(.vertical, 3)
-    }
-}
-
 // MARK: - File Drag Layer
 // Uses NSFilePromiseProvider so Finder (and other apps) receive the real file, not a URL shortcut.
 
@@ -884,7 +787,11 @@ private struct FileDragLayer: NSViewRepresentable {
 
                 completionHandler(nil)
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: transferTrayItemExportedNotification, object: sourceURL)
+                    NotificationCenter.default.post(
+                        name: transferTrayItemExportedNotification,
+                        object: sourceURL,
+                        userInfo: ["destinationURL": finalDestinationURL]
+                    )
                 }
             } catch {
                 completionHandler(error)

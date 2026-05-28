@@ -756,22 +756,34 @@ private struct FullDiskAccessCard: View {
     let state: FullDiskAccessState
     let refresh: () -> Void
 
+    @State private var isRefreshing = false
+    @State private var spinDegrees: Double = 0
+
     var body: some View {
         PeekCard {
             HStack(alignment: .top, spacing: 14) {
                 Image(systemName: state.icon)
                     .font(.system(size: 28))
                     .foregroundStyle(state.color)
+                    .animation(.easeInOut(duration: 0.25), value: state)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(state.title)
-                        .font(.headline)
+                    HStack(spacing: 8) {
+                        Text(state.title)
+                            .font(.headline)
+                        // Ponto vermelho/verde de status
+                        Circle()
+                            .fill(state.color)
+                            .frame(width: 8, height: 8)
+                            .shadow(color: state.color.opacity(0.5), radius: 3)
+                            .animation(.easeInOut(duration: 0.3), value: state)
+                    }
 
                     Text(state.message)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    if state != .granted {
+                    if !state.isGranted {
                         Text("Depois de ativar, feche e abra o FolderPeek para o macOS aplicar a permissão.")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
@@ -783,20 +795,57 @@ private struct FullDiskAccessCard: View {
             }
 
             HStack(spacing: 10) {
-                Button {
-                    AppActions.openFullDiskAccessSettings()
-                } label: {
-                    Label("Abrir Privacidade", systemImage: "gearshape.fill")
+                if state.isGranted {
+                    // Permissão ativa — botão neutro para abrir ajustes se quiser
+                    Button {
+                        AppActions.openFullDiskAccessSettings()
+                    } label: {
+                        Label("Ajustes de Privacidade", systemImage: "gearshape")
+                    }
+                    .buttonStyle(.bordered)
+                } else {
+                    // Permissão ausente — destaque em vermelho + opção de reiniciar
+                    Button {
+                        AppActions.openFullDiskAccessSettings()
+                    } label: {
+                        Label("Abrir Privacidade", systemImage: "gearshape.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+
+                    Button {
+                        AppActions.relaunch()
+                    } label: {
+                        Label("Reiniciar FolderPeek", systemImage: "arrow.counterclockwise.circle")
+                    }
+                    .buttonStyle(.bordered)
+                    .help("Fecha e reabre o FolderPeek para aplicar a permissão concedida")
                 }
-                .buttonStyle(.borderedProminent)
 
                 Button {
-                    refresh()
+                    triggerRefresh()
                 } label: {
-                    Label("Atualizar status", systemImage: "arrow.clockwise")
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.clockwise")
+                            .rotationEffect(.degrees(spinDegrees))
+                        Text("Verificar")
+                    }
                 }
                 .buttonStyle(.bordered)
+                .disabled(isRefreshing)
             }
+        }
+    }
+
+    private func triggerRefresh() {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        withAnimation(.linear(duration: 0.6)) {
+            spinDegrees += 360
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            refresh()
+            isRefreshing = false
         }
     }
 }
