@@ -8,7 +8,7 @@
 ![Status](https://img.shields.io/badge/status-active-success)
 ![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
-![Version](https://img.shields.io/badge/version-1.3-blue)
+![Version](https://img.shields.io/badge/version-2.0-blue)
 ![Stars](https://img.shields.io/github/stars/alisoncardosoo/FolderPeek?style=social)
 ![Forks](https://img.shields.io/github/forks/alisoncardosoo/FolderPeek?style=social)
 ![Issues](https://img.shields.io/github/issues/alisoncardosoo/FolderPeek)
@@ -43,7 +43,7 @@ Portuguese guide (primary): [README.pt-BR.md](./README.pt-BR.md)
 
 🟢 **Active / under continuous improvement**
 
-- Current version: **1.3 (build 4)**
+- Current version: **2.0 (build 5)**
 - Update channel: **Sparkle (stable)**
 
 ## 🔨 Features
@@ -55,10 +55,15 @@ Portuguese guide (primary): [README.pt-BR.md](./README.pt-BR.md)
 - Dedicated donation tab (PIX, QR code, copy action).
 - Project PIX key: `d6d63f9b-5e12-4b96-8f33-d2b83a23e86d`.
 
-### Temporary tray (Dropover/Yoink-style)
+### Real tray folder (Dropover/Yoink-style)
 
+- The tray uses a real folder created automatically at `~/Library/Application Support/FolderPeek/Bandeja`.
 - Single floating tray window (no tabs) to hold multiple files temporarily.
 - Clean grid layout focused on drag in / drag out.
+- Dropping files into the tray moves them into the `Bandeja` folder.
+- Dragging items out of the tray removes them from the tray list automatically.
+- If you close the tray with pending items, the app attempts to restore them to their original location.
+- To move and restore real files, the main app is signed without App Sandbox; the Quick Look extension remains sandboxed.
 - Automatic trigger when Finder file drag is detected.
 - The tray opens attached to the right side of Finder whenever possible.
 - Default global shortcut to show/hide: `Control + Option + Space`.
@@ -137,13 +142,14 @@ cd FolderPeek
 xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration Debug CODE_SIGNING_ALLOWED=NO test
 ```
 
-### 6) Use the temporary tray
+### 6) Use the tray (real folder)
 
 1. In Finder, start dragging files to auto-open the tray.
 2. Manual fallback: press `Control + Option + Space`.
 3. Drop files into the tray.
 4. Drag tray items into the destination Finder folder.
-5. Only one tray instance is allowed at a time (no multiple tray windows/tabs).
+5. If you close the tray with items still inside, they return to their original location automatically.
+6. Only one tray instance is allowed at a time (no multiple tray windows/tabs).
 
 ### 7) In-app updates with Sparkle
 
@@ -201,6 +207,7 @@ Release flow snippet:
 - [x] ZIP listing from shared core
 - [x] Automated build/install workflow
 - [x] Sparkle in-app updates
+- [x] Transfer tray with drag-and-drop (v2.0)
 - [ ] Full screenshots/GIF walkthrough
 - [ ] Fully automated CI release pipeline
 

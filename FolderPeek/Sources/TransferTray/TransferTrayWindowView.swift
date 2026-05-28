@@ -3,6 +3,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 import FolderPeekCore
 
+fileprivate let transferTrayItemExportedNotification = Notification.Name("FolderPeekTransferTrayItemExported")
+
 struct TransferTrayWindowView: View {
     @ObservedObject var store: TransferTrayStore
     let hideWindow: () -> Void
@@ -10,6 +12,8 @@ struct TransferTrayWindowView: View {
 
     @State private var isDropTarget = false
     @State private var showingHistory = false
+    @State private var selectedItemIDs: Set<String> = []
+    @State private var selectionAnchorID: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,7 +46,7 @@ struct TransferTrayWindowView: View {
         .background(shelfBackground)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(borderOverlay)
-        .shadow(color: .black.opacity(0.22), radius: 24, y: 12)
+        .shadow(color: .black.opacity(0.16), radius: 20, y: 10)
         .overlay(dropTargetHighlight)
         .onDrop(of: [UTType.fileURL.identifier], isTargeted: $isDropTarget, perform: handleDrop(providers:))
         .alert("Mover arquivos?", isPresented: $store.showMoveConfirmation) {
@@ -60,6 +64,17 @@ struct TransferTrayWindowView: View {
         .sheet(isPresented: $showingHistory) {
             TransferHistoryView(store: store)
         }
+        .onReceive(NotificationCenter.default.publisher(for: transferTrayItemExportedNotification)) { notification in
+            guard let sourceURL = notification.object as? URL else { return }
+            let exportedItemID = TransferItemCollection.canonicalPath(for: sourceURL)
+            selectedItemIDs.remove(exportedItemID)
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                store.consumeItemAfterExternalDrop(sourceURL: sourceURL)
+            }
+        }
+        .onChange(of: store.items.map(\.id)) { _, itemIDs in
+            pruneSelection(validItemIDs: itemIDs)
+        }
     }
 
     // MARK: - Background
@@ -67,11 +82,12 @@ struct TransferTrayWindowView: View {
     private var shelfBackground: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .fill(.ultraThinMaterial)
+            .opacity(0.72)
     }
 
     private var borderOverlay: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
+            .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
     }
 
     private var dropTargetHighlight: some View {
@@ -119,55 +135,48 @@ struct TransferTrayWindowView: View {
                         .foregroundStyle(.red.opacity(0.8))
                 }
                 .buttonStyle(.plain)
-                .help("Limpar bandeja")
+                .help("Devolver tudo para a origem")
+            }
 
-                Menu {
-                    Picker("Operação", selection: $store.operation) {
-                        Label("Copiar", systemImage: "doc.on.doc").tag(TransferOperation.copy)
-                        Label("Mover", systemImage: "arrow.right.doc.on.clipboard").tag(TransferOperation.move)
-                    }
-                    .pickerStyle(.inline)
-
-                    Divider()
-
-                    Button("Desfazer último move") { store.undoLastMove() }
-                    Button("Ver histórico…") { showingHistory = true }
+            Menu {
+                Button {
+                    store.revealTrayFolderInFinder()
                 } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.system(size: 15))
-                        .foregroundStyle(.secondary)
+                    Label("Abrir pasta da Bandeja", systemImage: "folder")
                 }
-                .buttonStyle(.plain)
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-            }
 
-            Button(action: store.chooseDestination) {
-                Label(
-                    store.destinationURL == nil ? "Destino" : store.destinationURL!.lastPathComponent,
-                    systemImage: "folder"
-                )
-                .lineLimit(1)
-                .frame(maxWidth: 100)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .disabled(store.isProcessing)
+                Divider()
 
-            if store.canExecuteTransfer {
-                Button(action: store.requestExecuteTransfer) {
-                    Image(systemName: store.operation == .copy
-                          ? "doc.on.doc.fill"
-                          : "arrow.right.doc.on.clipboard.fill")
-                    .font(.system(size: 12))
+                Button {
+                    store.undoLastMove()
+                } label: {
+                    Label("Desfazer último move", systemImage: "arrow.uturn.backward")
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .tint(store.operation == .move ? .orange : .accentColor)
-                .transition(.scale.combined(with: .opacity))
+
+                Button {
+                    showingHistory = true
+                } label: {
+                    Label("Ver histórico...", systemImage: "clock.arrow.circlepath")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(.secondary)
             }
+            .buttonStyle(.plain)
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+
+            Button(action: hideWindow) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 15))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Fechar bandeja")
         }
-        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: store.canExecuteTransfer)
+        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: store.items.isEmpty)
     }
 
     // MARK: - Progress
@@ -212,11 +221,20 @@ struct TransferTrayWindowView: View {
                             TransferTrayTile(
                                 item: item,
                                 thumbnail: store.thumbnail(for: item),
+                                isSelected: selectedItemIDs.contains(item.id),
+                                selectedCount: selectedItemIDs.count,
+                                selectItem: { modifiers in
+                                    applySelection(for: item, modifiers: modifiers)
+                                },
+                                prepareDragItems: { modifiers in
+                                    prepareDragItems(for: item, modifiers: modifiers)
+                                },
                                 removeItem: {
                                     withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
                                         store.removeItem(item)
                                     }
-                                }
+                                },
+                                removeSelectedItems: removeSelectedItems
                             )
                             .transition(
                                 .asymmetric(
@@ -235,6 +253,114 @@ struct TransferTrayWindowView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Selection
+
+    @discardableResult
+    private func applySelection(for item: TransferTrayStore.Item, modifiers: NSEvent.ModifierFlags) -> Set<String> {
+        let flags = modifiers.intersection(.deviceIndependentFlagsMask)
+        let additive = flags.contains(.command)
+        let ranged = flags.contains(.shift)
+
+        let nextSelection: Set<String>
+        if ranged {
+            let rangeIDs = rangeSelectionIDs(to: item)
+            if additive {
+                nextSelection = selectedItemIDs.union(rangeIDs)
+            } else {
+                nextSelection = rangeIDs
+            }
+        } else if additive {
+            var updatedSelection = selectedItemIDs
+            if updatedSelection.contains(item.id) {
+                updatedSelection.remove(item.id)
+            } else {
+                updatedSelection.insert(item.id)
+            }
+            nextSelection = updatedSelection.isEmpty ? [item.id] : updatedSelection
+        } else {
+            nextSelection = [item.id]
+        }
+
+        selectedItemIDs = nextSelection
+        if !ranged {
+            selectionAnchorID = item.id
+        } else if selectionAnchorID == nil {
+            selectionAnchorID = item.id
+        }
+        return nextSelection
+    }
+
+    private func prepareDragItems(
+        for item: TransferTrayStore.Item,
+        modifiers: NSEvent.ModifierFlags
+    ) -> [TransferTrayDragItem] {
+        let flags = modifiers.intersection(.deviceIndependentFlagsMask)
+        let shouldKeepCurrentSelection = selectedItemIDs.contains(item.id)
+            && !flags.contains(.command)
+            && !flags.contains(.shift)
+
+        let dragIDs = shouldKeepCurrentSelection
+            ? selectedItemIDs
+            : applySelection(for: item, modifiers: modifiers)
+
+        return dragItems(for: dragIDs, primaryItemID: item.id)
+    }
+
+    private func rangeSelectionIDs(to item: TransferTrayStore.Item) -> Set<String> {
+        guard let anchorID = selectionAnchorID,
+              let anchorIndex = store.items.firstIndex(where: { $0.id == anchorID }),
+              let itemIndex = store.items.firstIndex(where: { $0.id == item.id }) else {
+            return [item.id]
+        }
+
+        let bounds = anchorIndex <= itemIndex
+            ? anchorIndex...itemIndex
+            : itemIndex...anchorIndex
+        return Set(store.items[bounds].map(\.id))
+    }
+
+    private func pruneSelection(validItemIDs: [String]) {
+        let validIDs = Set(validItemIDs)
+        selectedItemIDs.formIntersection(validIDs)
+        if let selectionAnchorID, !validIDs.contains(selectionAnchorID) {
+            self.selectionAnchorID = selectedItemIDs.first
+        }
+    }
+
+    private func dragItems(for ids: Set<String>, primaryItemID: String? = nil) -> [TransferTrayDragItem] {
+        var items = store.items.filter { ids.contains($0.id) }
+        if let primaryItemID,
+           let index = items.firstIndex(where: { $0.id == primaryItemID }) {
+            let primary = items.remove(at: index)
+            items.insert(primary, at: 0)
+        }
+
+        return items.map { item in
+            TransferTrayDragItem(
+                id: item.id,
+                url: item.url,
+                suggestedName: item.name,
+                thumbnail: store.thumbnail(for: item)
+            )
+        }
+    }
+
+    private func removeSelectedItems() {
+        let selectedIDs = selectedItemIDs
+        guard !selectedIDs.isEmpty else {
+            return
+        }
+
+        let itemsToRemove = store.items.filter { selectedIDs.contains($0.id) }
+        for item in itemsToRemove {
+            store.removeItem(item)
+        }
+        selectedItemIDs.subtract(selectedIDs)
+        if let selectionAnchorID, selectedIDs.contains(selectionAnchorID) {
+            self.selectionAnchorID = selectedItemIDs.first
+        }
     }
 
     // MARK: - Empty State
@@ -355,7 +481,12 @@ struct TransferTrayWindowView: View {
 private struct TransferTrayTile: View {
     let item: TransferTrayStore.Item
     let thumbnail: NSImage
+    let isSelected: Bool
+    let selectedCount: Int
+    let selectItem: (NSEvent.ModifierFlags) -> Void
+    let prepareDragItems: (NSEvent.ModifierFlags) -> [TransferTrayDragItem]
     let removeItem: () -> Void
+    let removeSelectedItems: () -> Void
 
     @State private var isHovered = false
 
@@ -370,7 +501,19 @@ private struct TransferTrayTile: View {
                     .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
                     // FileDragLayer covers only the 58×58 image; the X button sits at
                     // offset(x:6,y:-6) which places it outside this area — no event conflict.
-                    .overlay(FileDragLayer(url: item.url, suggestedName: item.name))
+                    .overlay(
+                        FileDragLayer(
+                            defaultDragItems: [
+                                TransferTrayDragItem(
+                                    id: item.id,
+                                    url: item.url,
+                                    suggestedName: item.name,
+                                    thumbnail: thumbnail
+                                )
+                            ],
+                            prepareDragItems: prepareDragItems
+                        )
+                    )
 
                 if isHovered {
                     Button(action: removeItem) {
@@ -382,6 +525,8 @@ private struct TransferTrayTile: View {
                     .buttonStyle(.plain)
                     .offset(x: 6, y: -6)
                     .transition(.opacity.combined(with: .scale(scale: 0.7)))
+                } else if isSelected {
+                    selectionBadge
                 } else {
                     statusBadge
                 }
@@ -398,12 +543,42 @@ private struct TransferTrayTile: View {
         .padding(.vertical, 6)
         .padding(.horizontal, 4)
         .contentShape(Rectangle())
+        .background(selectionBackground)
+        .overlay(selectionBorder)
+        .onTapGesture {
+            selectItem(NSEvent.modifierFlags)
+        }
         .onHover { isHovered = $0 }
         .animation(.easeInOut(duration: 0.12), value: isHovered)
+        .animation(.spring(response: 0.2, dampingFraction: 0.78), value: isSelected)
         .contextMenu {
+            if isSelected && selectedCount > 1 {
+                Button("Remover \(selectedCount) selecionados", role: .destructive) {
+                    removeSelectedItems()
+                }
+                Divider()
+            }
             Button("Remover da bandeja", role: .destructive) { removeItem() }
         }
         .help(item.url.path(percentEncoded: false))
+    }
+
+    private var selectionBackground: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
+    }
+
+    private var selectionBorder: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .stroke(isSelected ? Color.accentColor.opacity(0.58) : Color.clear, lineWidth: 1.2)
+    }
+
+    private var selectionBadge: some View {
+        Image(systemName: "checkmark.circle.fill")
+            .font(.system(size: 14))
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(.white, Color.accentColor)
+            .offset(x: 5, y: -5)
     }
 
     @ViewBuilder
@@ -527,75 +702,135 @@ private struct HistoryRecordRow: View {
 // MARK: - File Drag Layer
 // Uses NSFilePromiseProvider so Finder (and other apps) receive the real file, not a URL shortcut.
 
-private struct FileDragLayer: NSViewRepresentable {
+private struct TransferTrayDragItem {
+    let id: String
     let url: URL
     let suggestedName: String
+    let thumbnail: NSImage
+}
+
+private struct FileDragLayer: NSViewRepresentable {
+    let defaultDragItems: [TransferTrayDragItem]
+    let prepareDragItems: (NSEvent.ModifierFlags) -> [TransferTrayDragItem]
 
     func makeNSView(context: Context) -> _DragSourceView {
-        _DragSourceView(url: url, suggestedName: suggestedName)
+        _DragSourceView(defaultDragItems: defaultDragItems, prepareDragItems: prepareDragItems)
     }
 
     func updateNSView(_ nsView: _DragSourceView, context: Context) {
-        nsView.url = url
-        nsView.suggestedName = suggestedName
+        nsView.defaultDragItems = defaultDragItems
+        nsView.prepareDragItems = prepareDragItems
     }
 
     // MARK: Drag source view
 
     final class _DragSourceView: NSView {
-        var url: URL
-        var suggestedName: String
+        var defaultDragItems: [TransferTrayDragItem]
+        var prepareDragItems: (NSEvent.ModifierFlags) -> [TransferTrayDragItem]
         // Retained for the lifetime of the drag session.
         private var activeDelegate: _PromiseDelegate?
+        private var pendingDragItems: [TransferTrayDragItem]?
 
-        init(url: URL, suggestedName: String) {
-            self.url = url
-            self.suggestedName = suggestedName
+        init(
+            defaultDragItems: [TransferTrayDragItem],
+            prepareDragItems: @escaping (NSEvent.ModifierFlags) -> [TransferTrayDragItem]
+        ) {
+            self.defaultDragItems = defaultDragItems
+            self.prepareDragItems = prepareDragItems
             super.init(frame: .zero)
         }
         required init?(coder: NSCoder) { fatalError() }
 
         // Transparent to background-window dragging; clicks handled by SwiftUI above.
         override var mouseDownCanMoveWindow: Bool { false }
-        override func acceptsFirstMouse(for event: NSEvent?) -> Bool { false }
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
         // Accept mouseDown without calling super so AppKit keeps this view as the
         // event owner, which is required for mouseDragged to fire on this view.
         // The X button lives outside the 58×58 image bounds so it is unaffected.
         // Right-click (context menu) uses rightMouseDown — also unaffected.
         override func mouseDown(with event: NSEvent) {
-            // intentionally accepts event without forwarding
+            pendingDragItems = prepareDragItems(event.modifierFlags)
         }
 
         override func mouseDragged(with event: NSEvent) {
-            let delegate = _PromiseDelegate(url: url)
+            let dragItems = nonEmptyDragItems()
+            guard !dragItems.isEmpty else {
+                return
+            }
+
+            let delegate = _PromiseDelegate()
             activeDelegate = delegate
 
+            let draggingItems = dragItems.enumerated().map { index, dragItem in
+                let provider = NSFilePromiseProvider(
+                    fileType: fileTypeIdentifier(for: dragItem.url),
+                    delegate: delegate
+                )
+                provider.userInfo = [
+                    "url": dragItem.url,
+                    "name": dragItem.suggestedName
+                ]
+
+                let draggingItem = NSDraggingItem(pasteboardWriter: provider)
+                draggingItem.setDraggingFrame(
+                    draggingFrame(for: event, index: index),
+                    contents: dragPreviewImage(for: dragItem)
+                )
+                return draggingItem
+            }
+
+            pendingDragItems = nil
+            beginDraggingSession(with: draggingItems, event: event, source: delegate)
+        }
+
+        override func mouseUp(with event: NSEvent) {
+            pendingDragItems = nil
+        }
+
+        private func nonEmptyDragItems() -> [TransferTrayDragItem] {
+            if let pendingDragItems, !pendingDragItems.isEmpty {
+                return pendingDragItems
+            }
+            return defaultDragItems
+        }
+
+        private func fileTypeIdentifier(for url: URL) -> String {
             let isDir = (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
-            let fileType = isDir
-                ? UTType.folder.identifier
-                : (UTType(filenameExtension: url.pathExtension)?.identifier ?? UTType.data.identifier)
+            if isDir {
+                return UTType.folder.identifier
+            }
+            return UTType(filenameExtension: url.pathExtension)?.identifier ?? UTType.data.identifier
+        }
 
-            let provider = NSFilePromiseProvider(fileType: fileType, delegate: delegate)
-            provider.userInfo = ["name": suggestedName]
+        private func draggingFrame(for event: NSEvent, index: Int) -> NSRect {
+            let previewSize = NSSize(width: 58, height: 58)
+            let point = convert(event.locationInWindow, from: nil)
+            let visualOffset = CGFloat(min(index, 5)) * 4
+            return NSRect(
+                x: point.x - previewSize.width / 2 + visualOffset,
+                y: point.y - previewSize.height / 2 - visualOffset,
+                width: previewSize.width,
+                height: previewSize.height
+            )
+        }
 
-            let item = NSDraggingItem(pasteboardWriter: provider)
-            item.setDraggingFrame(bounds, contents: nil)
-            beginDraggingSession(with: [item], event: event, source: delegate)
+        private func dragPreviewImage(for item: TransferTrayDragItem) -> NSImage {
+            let image = (item.thumbnail.copy() as? NSImage)
+                ?? NSWorkspace.shared.icon(forFile: item.url.path(percentEncoded: false))
+            image.size = NSSize(width: 58, height: 58)
+            return image
         }
     }
 
     // MARK: Promise delegate + drag source
 
     final class _PromiseDelegate: NSObject, NSFilePromiseProviderDelegate, NSDraggingSource {
-        let url: URL
-        init(url: URL) { self.url = url }
-
         func filePromiseProvider(
             _ filePromiseProvider: NSFilePromiseProvider,
             fileNameForType fileType: String
         ) -> String {
-            url.lastPathComponent
+            promisePayload(from: filePromiseProvider)?.name ?? "Arquivo"
         }
 
         func filePromiseProvider(
@@ -603,19 +838,111 @@ private struct FileDragLayer: NSViewRepresentable {
             writePromiseTo destURL: URL,
             completionHandler: @escaping (Error?) -> Void
         ) {
+            guard let payload = promisePayload(from: filePromiseProvider) else {
+                completionHandler(NSError(
+                    domain: "FolderPeekTransferTray",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Arquivo da bandeja não encontrado para arraste."]
+                ))
+                return
+            }
+
+            let sourceURL = payload.url
             do {
-                try FileManager.default.copyItem(at: url, to: destURL)
+                let normalizedDestination = normalizedFilePathURL(from: destURL)
+                let destinationIsDirectory = (try? normalizedDestination.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+                let baseDestinationURL = destinationIsDirectory
+                    ? normalizedDestination.appendingPathComponent(payload.name)
+                    : normalizedDestination
+                let finalDestinationURL = availableDestinationURL(from: baseDestinationURL)
+
+                let sourceAccess = sourceURL.startAccessingSecurityScopedResource()
+                let destinationParent = finalDestinationURL.deletingLastPathComponent()
+                let destinationAccess = destinationParent.startAccessingSecurityScopedResource()
+                defer {
+                    if sourceAccess {
+                        sourceURL.stopAccessingSecurityScopedResource()
+                    }
+                    if destinationAccess {
+                        destinationParent.stopAccessingSecurityScopedResource()
+                    }
+                }
+
+                do {
+                    try FileManager.default.moveItem(at: sourceURL, to: finalDestinationURL)
+                } catch {
+                    try FileManager.default.copyItem(at: sourceURL, to: finalDestinationURL)
+                    do {
+                        if FileManager.default.fileExists(atPath: sourceURL.path(percentEncoded: false)) {
+                            try FileManager.default.removeItem(at: sourceURL)
+                        }
+                    } catch {
+                        try? FileManager.default.removeItem(at: finalDestinationURL)
+                        throw error
+                    }
+                }
+
                 completionHandler(nil)
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: transferTrayItemExportedNotification, object: sourceURL)
+                }
             } catch {
                 completionHandler(error)
             }
+        }
+
+        private func promisePayload(from provider: NSFilePromiseProvider) -> (url: URL, name: String)? {
+            guard let payload = provider.userInfo as? [String: Any],
+                  let url = payload["url"] as? URL else {
+                return nil
+            }
+
+            let name = payload["name"] as? String
+            return (url, (name?.isEmpty == false ? name : nil) ?? url.lastPathComponent)
+        }
+
+        private func normalizedFilePathURL(from url: URL) -> URL {
+            guard url.isFileURL else { return url }
+            if let filePathURL = (url as NSURL).filePathURL {
+                return filePathURL.standardizedFileURL
+            }
+            return url.standardizedFileURL
+        }
+
+        private func availableDestinationURL(from baseURL: URL) -> URL {
+            let manager = FileManager.default
+            guard manager.fileExists(atPath: baseURL.path) else {
+                return baseURL
+            }
+
+            let fileExtension = baseURL.pathExtension
+            let baseName = baseURL.deletingPathExtension().lastPathComponent
+            let parentURL = baseURL.deletingLastPathComponent()
+
+            for attempt in 1...999 {
+                let candidateName = "\(baseName) \(attempt)"
+                let candidateURL: URL
+                if fileExtension.isEmpty {
+                    candidateURL = parentURL.appendingPathComponent(candidateName)
+                } else {
+                    candidateURL = parentURL
+                        .appendingPathComponent(candidateName)
+                        .appendingPathExtension(fileExtension)
+                }
+
+                if !manager.fileExists(atPath: candidateURL.path) {
+                    return candidateURL
+                }
+            }
+
+            return baseURL
         }
 
         func draggingSession(
             _ session: NSDraggingSession,
             sourceOperationMaskFor context: NSDraggingContext
         ) -> NSDragOperation {
-            context == .outsideApplication ? [.copy, .link] : [.copy, .move, .link]
+            context == .outsideApplication ? [.copy, .move, .link] : [.copy, .move, .link]
         }
     }
 }

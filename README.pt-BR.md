@@ -8,7 +8,7 @@
 ![Status](https://img.shields.io/badge/status-ativo-success)
 ![Plataforma](https://img.shields.io/badge/plataforma-macOS%2014%2B-black)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
-![Versão](https://img.shields.io/badge/vers%C3%A3o-1.3-blue)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.0-blue)
 ![Stars](https://img.shields.io/github/stars/alisoncardosoo/FolderPeek?style=social)
 ![Forks](https://img.shields.io/github/forks/alisoncardosoo/FolderPeek?style=social)
 ![Issues](https://img.shields.io/github/issues/alisoncardosoo/FolderPeek)
@@ -43,7 +43,7 @@ O projeto é voltado para pessoas desenvolvedoras e usuários avançados de macO
 
 🟢 **Ativo / Em evolução contínua**
 
-- Versão atual do app: **1.3 (build 4)**
+- Versão atual do app: **2.0 (build 5)**
 - Canal de atualização: **Sparkle (estável)**
 
 ## 🔨 Funcionalidades
@@ -55,10 +55,15 @@ O projeto é voltado para pessoas desenvolvedoras e usuários avançados de macO
 - Aba de doação com PIX, QR Code e ação de copiar chave.
 - Chave PIX do projeto: `d6d63f9b-5e12-4b96-8f33-d2b83a23e86d`.
 
-### Bandeja temporária (Dropover/Yoink-style)
+### Bandeja real (Dropover/Yoink-style)
 
+- A bandeja usa uma pasta real criada automaticamente em `~/Library/Application Support/FolderPeek/Bandeja`.
 - Janela flutuante única (sem abas) para segurar múltiplos arquivos temporariamente.
 - Layout simples em grade, focado em arrastar itens para dentro e para fora.
+- Ao soltar arquivos na bandeja, eles são movidos para a pasta `Bandeja`.
+- Ao arrastar itens para fora da bandeja, eles saem da lista automaticamente.
+- Se você fechar a bandeja com itens pendentes, o app tenta devolver esses itens para a pasta de origem.
+- Para permitir mover e devolver arquivos reais, o app principal é assinado sem App Sandbox; a extensão Quick Look continua isolada.
 - Gatilho automático ao detectar arrasto de arquivos no Finder.
 - A bandeja abre colada ao lado direito do Finder quando possível.
 - Atalho global padrão para abrir/ocultar: `Control + Option + Space`.
@@ -137,13 +142,14 @@ cd FolderPeek
 xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration Debug CODE_SIGNING_ALLOWED=NO test
 ```
 
-### 6) Usar a bandeja temporária
+### 6) Usar a bandeja (pasta real)
 
 1. No Finder, comece a arrastar arquivos para abrir a bandeja automaticamente.
 2. Alternativa manual: pressione `Control + Option + Space`.
 3. Solte os arquivos na bandeja.
 4. Arraste os itens da bandeja para a pasta desejada no Finder.
-5. A bandeja mantém apenas uma instância por vez (sem múltiplas janelas/abas).
+5. Se você fechar a bandeja com itens ainda lá, eles voltam para a origem automaticamente.
+6. A bandeja mantém apenas uma instância por vez (sem múltiplas janelas/abas).
 
 ### 7) Atualizações in-app com Sparkle
 
@@ -201,6 +207,7 @@ Fluxo de release resumido:
 - [x] Listagem de ZIP via core compartilhado
 - [x] Fluxo de build e instalação automatizado
 - [x] Atualização in-app com Sparkle
+- [x] Bandeja de transferência com drag-and-drop (v2.0)
 - [ ] Screenshots/GIF da experiência completa
 - [ ] Pipeline de release totalmente automatizado via CI
 

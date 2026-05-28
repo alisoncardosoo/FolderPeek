@@ -5,18 +5,50 @@ import FolderPeekCore
 
 // MARK: - Window Glass Accessor
 
+private let mainWindowFixedSize = NSSize(width: 512, height: 912)
+private let mainWindowIdentifier = NSUserInterfaceItemIdentifier("folderpeek.mainWindow")
+
 private struct WindowGlassAccessor: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         DispatchQueue.main.async {
             guard let window = view.window else { return }
-            window.titlebarAppearsTransparent = true
-            window.isMovableByWindowBackground = true
-            window.backgroundColor = .windowBackgroundColor
+            configure(window)
         }
         return view
     }
-    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            guard let window = nsView.window else { return }
+            configure(window)
+        }
+    }
+
+    private func configure(_ window: NSWindow) {
+        window.identifier = mainWindowIdentifier
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        window.backgroundColor = .windowBackgroundColor
+        window.isRestorable = false
+        window.minSize = mainWindowFixedSize
+        window.maxSize = mainWindowFixedSize
+        window.styleMask.remove(.resizable)
+        window.standardWindowButton(.zoomButton)?.isEnabled = false
+
+        guard window.frame.size != mainWindowFixedSize else {
+            return
+        }
+
+        let currentFrame = window.frame
+        let fixedFrame = NSRect(
+            x: currentFrame.minX,
+            y: currentFrame.maxY - mainWindowFixedSize.height,
+            width: mainWindowFixedSize.width,
+            height: mainWindowFixedSize.height
+        )
+        window.setFrame(fixedFrame, display: true, animate: false)
+    }
 }
 
 // MARK: - App Tab
@@ -60,7 +92,7 @@ struct ContentView: View {
             tabContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 440, minHeight: 500)
+        .frame(width: mainWindowFixedSize.width, height: mainWindowFixedSize.height)
         .background(WindowGlassAccessor().frame(width: 0, height: 0))
     }
 
@@ -159,6 +191,7 @@ struct ContentView: View {
 
 private struct HomeTab: View {
     let onDonateTap: () -> Void
+    @State private var fullDiskAccessState: FullDiskAccessState = AppActions.fullDiskAccessState()
 
     var body: some View {
         ScrollView {
@@ -166,6 +199,7 @@ private struct HomeTab: View {
                 appHeader
                 extensionStatusCard
                 appLocationCard
+                fullDiskAccessCard
                 activationStepsCard
                 bandejaCard
                 donationCTA
@@ -180,6 +214,7 @@ private struct HomeTab: View {
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 10)
         }
+        .onAppear(perform: refreshFullDiskAccessState)
     }
 
     private var appHeader: some View {
@@ -233,6 +268,17 @@ private struct HomeTab: View {
                 }
             }
         }
+    }
+
+    private var fullDiskAccessCard: some View {
+        FullDiskAccessCard(
+            state: fullDiskAccessState,
+            refresh: refreshFullDiskAccessState
+        )
+    }
+
+    private func refreshFullDiskAccessState() {
+        fullDiskAccessState = AppActions.fullDiskAccessState()
     }
 
     private var activationStepsCard: some View {
@@ -307,6 +353,7 @@ private struct SettingsTab: View {
     @AppStorage("autoShowOnDrag") private var autoShowOnDrag = true
     @AppStorage("shelfHotkeyModifiers") private var hotkeyModifiers = 786432
     @AppStorage("shelfHotkeyDisplayName") private var hotkeyDisplayName = "Space"
+    @State private var fullDiskAccessState: FullDiskAccessState = AppActions.fullDiskAccessState()
 
     var body: some View {
         ScrollView {
@@ -314,11 +361,13 @@ private struct SettingsTab: View {
                 appearanceSection
                 behaviorSection
                 bandejaSection
+                permissionsSection
                 updatesSection
             }
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .onAppear(perform: refreshFullDiskAccessState)
     }
 
     private var appearanceSection: some View {
@@ -391,6 +440,20 @@ private struct SettingsTab: View {
                 .buttonStyle(.bordered)
             }
         }
+    }
+
+    private var permissionsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            PeekSectionLabel(icon: "lock.shield.fill", title: "Permissões")
+            FullDiskAccessCard(
+                state: fullDiskAccessState,
+                refresh: refreshFullDiskAccessState
+            )
+        }
+    }
+
+    private func refreshFullDiskAccessState() {
+        fullDiskAccessState = AppActions.fullDiskAccessState()
     }
 
     private var hotkeyLabel: String {
@@ -686,6 +749,55 @@ private struct PeekCard<Content: View>: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct FullDiskAccessCard: View {
+    let state: FullDiskAccessState
+    let refresh: () -> Void
+
+    var body: some View {
+        PeekCard {
+            HStack(alignment: .top, spacing: 14) {
+                Image(systemName: state.icon)
+                    .font(.system(size: 28))
+                    .foregroundStyle(state.color)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(state.title)
+                        .font(.headline)
+
+                    Text(state.message)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if state != .granted {
+                        Text("Depois de ativar, feche e abra o FolderPeek para o macOS aplicar a permissão.")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            HStack(spacing: 10) {
+                Button {
+                    AppActions.openFullDiskAccessSettings()
+                } label: {
+                    Label("Abrir Privacidade", systemImage: "gearshape.fill")
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button {
+                    refresh()
+                } label: {
+                    Label("Atualizar status", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.bordered)
+            }
+        }
     }
 }
 

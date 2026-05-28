@@ -106,12 +106,18 @@ final class TransferTrayWindowDelegate: NSObject, NSWindowDelegate {
 
     var shouldAutoHide: (() -> Bool)?
     var hideAction: (() -> Void)?
+    var beforeCloseAction: (() -> Void)?
 
     func windowDidResignKey(_ notification: Notification) {
         guard shouldAutoHide?() == true else {
             return
         }
         hideAction?()
+    }
+
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        beforeCloseAction?()
+        return true
     }
 }
 
@@ -141,6 +147,8 @@ struct FolderPeekApp: App {
                 }
         }
         .windowStyle(.titleBar)
+        .windowResizability(.contentSize)
+        .defaultSize(width: 512, height: 912)
 
         Window("Bandeja Temporária", id: "transferTray") {
             TransferTrayWindowView(
@@ -226,6 +234,7 @@ struct FolderPeekApp: App {
     }
 
     private func closeTransferTray() {
+        transferTrayStore.restorePendingItemsToOriginBeforeClosingTray()
         for trayWindow in transferTrayWindows() {
             trayWindow.close()
         }
@@ -253,6 +262,9 @@ struct FolderPeekApp: App {
             transferTrayStore.items.isEmpty && !transferTrayStore.isProcessing
         }
         TransferTrayWindowDelegate.shared.hideAction = { closeTransferTray() }
+        TransferTrayWindowDelegate.shared.beforeCloseAction = {
+            transferTrayStore.restorePendingItemsToOriginBeforeClosingTray()
+        }
         window.delegate = TransferTrayWindowDelegate.shared
         guard !alreadyConfigured else { return }
 
@@ -426,6 +438,10 @@ private struct MenuBarContent: View {
 
         Button("Abrir Ajustes de Extensoes") {
             AppActions.openQuickLookExtensionsSettings()
+        }
+
+        Button("Abrir Acesso Total ao Disco") {
+            AppActions.openFullDiskAccessSettings()
         }
 
         Divider()
