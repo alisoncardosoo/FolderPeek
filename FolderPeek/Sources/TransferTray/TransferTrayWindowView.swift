@@ -41,7 +41,7 @@ struct TransferTrayWindowView: View {
                 Spacer(minLength: 8)
             }
         }
-        .frame(minWidth: 300, minHeight: 220)
+        .frame(minWidth: 220, minHeight: 200)
         .background(shelfBackground)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(borderOverlay)

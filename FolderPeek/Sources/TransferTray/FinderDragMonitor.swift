@@ -4,14 +4,16 @@ import FolderPeekCore
 
 final class FinderDragMonitor {
     private let pollInterval: TimeInterval
-    private let onFilesDetected: ([URL]) -> Void
+    private let onFilesDetected: ([URL], NSPoint) -> Void
 
     private var timer: Timer?
     private var dragEventMonitor: Any?
     private var lastChangeCount = -1
     private var lastSeenCanonicalPaths: Set<String> = []
+    private var finderDragPending = false
+    private var cachedFinderFrames: [CGRect] = []
 
-    init(pollInterval: TimeInterval = 0.10, onFilesDetected: @escaping ([URL]) -> Void) {
+    init(pollInterval: TimeInterval = 0.10, onFilesDetected: @escaping ([URL], NSPoint) -> Void) {
         self.pollInterval = pollInterval
         self.onFilesDetected = onFilesDetected
     }
@@ -19,7 +21,7 @@ final class FinderDragMonitor {
     func start() {
         stop()
 
-        // Captures drags from any app (Finder, VS Code, browser, etc.) via the global drag pasteboard.
+        // Monitors the global drag pasteboard; only fires when drag originates from Finder.
         dragEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged) { [weak self] _ in
             self?.pollDragPasteboard()
         }
@@ -48,17 +50,30 @@ final class FinderDragMonitor {
     private func pollDragPasteboard() {
         let pasteboard = NSPasteboard(name: .drag)
         let changeCount = pasteboard.changeCount
-        guard changeCount != lastChangeCount else {
-            return
+
+        if changeCount != lastChangeCount {
+            lastChangeCount = changeCount
+            lastSeenCanonicalPaths.removeAll(keepingCapacity: true)
+            finderDragPending = false
+            cachedFinderFrames = []
+
+            if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.finder" {
+                finderDragPending = true
+                // Capture window frames once at drag start — avoids calling CGWindowListCopyWindowInfo on every poll tick.
+                cachedFinderFrames = finderWindowFrames()
+            }
         }
 
-        lastChangeCount = changeCount
+        guard finderDragPending else { return }
+
+        let mouseLocationCG = mousePositionInCGCoordinates()
+        guard !cachedFinderFrames.contains(where: { $0.contains(mouseLocationCG) }) else { return }
+
+        finderDragPending = false
+        cachedFinderFrames = []
 
         let fileURLs = readFileURLs(from: pasteboard)
-        guard !fileURLs.isEmpty else {
-            lastSeenCanonicalPaths.removeAll(keepingCapacity: true)
-            return
-        }
+        guard !fileURLs.isEmpty else { return }
 
         let canonicalPaths = Set(fileURLs.map { TransferItemCollection.canonicalPath(for: $0) })
         let freshURLs = fileURLs.filter {
@@ -67,11 +82,29 @@ final class FinderDragMonitor {
 
         lastSeenCanonicalPaths = canonicalPaths
 
-        guard !freshURLs.isEmpty else {
-            return
-        }
+        guard !freshURLs.isEmpty else { return }
 
-        onFilesDetected(freshURLs)
+        onFilesDetected(freshURLs, NSEvent.mouseLocation)
+    }
+
+    private func mousePositionInCGCoordinates() -> CGPoint {
+        let p = NSEvent.mouseLocation
+        let screenHeight = NSScreen.screens.first?.frame.height ?? 0
+        return CGPoint(x: p.x, y: screenHeight - p.y)
+    }
+
+    private func finderWindowFrames() -> [CGRect] {
+        guard let list = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
+        ) as? [[String: Any]] else { return [] }
+
+        return list.compactMap { info -> CGRect? in
+            guard (info[kCGWindowOwnerName as String] as? String) == "Finder",
+                  let b = info[kCGWindowBounds as String] as? [String: CGFloat]
+            else { return nil }
+            return CGRect(x: b["X"] ?? 0, y: b["Y"] ?? 0,
+                          width: b["Width"] ?? 0, height: b["Height"] ?? 0)
+        }
     }
 
     private func readFileURLs(from pasteboard: NSPasteboard) -> [URL] {
