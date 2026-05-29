@@ -5,17 +5,26 @@ import FolderPeekCore
 final class FinderDragMonitor {
     private let pollInterval: TimeInterval
     private let onFilesDetected: ([URL], NSPoint) -> Void
+    private let onDragEnded: () -> Void
 
     private var timer: Timer?
     private var dragEventMonitor: Any?
+    private var mouseUpEventMonitor: Any?
     private var lastChangeCount = -1
     private var lastSeenCanonicalPaths: Set<String> = []
     private var finderDragPending = false
     private var cachedFinderFrames: [CGRect] = []
+    // True once the tray has been shown for the in-flight drag, so mouse-up knows to check for hide.
+    private var didShowTrayForCurrentDrag = false
 
-    init(pollInterval: TimeInterval = 0.10, onFilesDetected: @escaping ([URL], NSPoint) -> Void) {
+    init(
+        pollInterval: TimeInterval = 0.10,
+        onFilesDetected: @escaping ([URL], NSPoint) -> Void,
+        onDragEnded: @escaping () -> Void = {}
+    ) {
         self.pollInterval = pollInterval
         self.onFilesDetected = onFilesDetected
+        self.onDragEnded = onDragEnded
     }
 
     func start() {
@@ -24,6 +33,11 @@ final class FinderDragMonitor {
         // Monitors the global drag pasteboard; only fires when drag originates from Finder.
         dragEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged) { [weak self] _ in
             self?.pollDragPasteboard()
+        }
+
+        // Detects drag release so a tray shown as drop target can hide if nothing was dropped into it.
+        mouseUpEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp) { [weak self] _ in
+            self?.handleMouseUp()
         }
 
         // Polling as complementary fallback for apps that don't trigger the global monitor reliably.
@@ -40,6 +54,11 @@ final class FinderDragMonitor {
         if let monitor = dragEventMonitor {
             NSEvent.removeMonitor(monitor)
             dragEventMonitor = nil
+        }
+
+        if let monitor = mouseUpEventMonitor {
+            NSEvent.removeMonitor(monitor)
+            mouseUpEventMonitor = nil
         }
     }
 
@@ -84,7 +103,21 @@ final class FinderDragMonitor {
 
         guard !freshURLs.isEmpty else { return }
 
+        didShowTrayForCurrentDrag = true
         onFilesDetected(freshURLs, NSEvent.mouseLocation)
+    }
+
+    private func handleMouseUp() {
+        // Reset per-drag pasteboard state so the next drag is detected as fresh.
+        lastChangeCount = -1
+        finderDragPending = false
+        cachedFinderFrames = []
+
+        guard didShowTrayForCurrentDrag else { return }
+        didShowTrayForCurrentDrag = false
+
+        // Receiver defers the empty-check so any drop-into-tray ingest can register first.
+        onDragEnded()
     }
 
     private func mousePositionInCGCoordinates() -> CGPoint {

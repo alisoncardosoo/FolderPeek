@@ -14,6 +14,7 @@ extension Notification.Name {
     static let folderPeekOpenTransferTray = Notification.Name("FolderPeekOpenTransferTray")
     static let folderPeekToggleTransferTray = Notification.Name("FolderPeekToggleTransferTray")
     static let folderPeekIngestTransferTrayURLs = Notification.Name("FolderPeekIngestTransferTrayURLs")
+    static let folderPeekDragEndedOutsideTray = Notification.Name("FolderPeekDragEndedOutsideTray")
 }
 
 fileprivate func scaledAppIcon(named name: String, size: NSSize) -> NSImage? {
@@ -60,13 +61,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         hotKeyMonitor?.start()
 
-        finderDragMonitor = FinderDragMonitor { urls, exitPoint in
-            guard !urls.isEmpty else { return }
-            let autoShow = UserDefaults.standard.object(forKey: "autoShowOnDrag") as? Bool ?? true
-            guard autoShow else { return }
-            // Only show the tray as a drop target; files are added only when dropped into the tray.
-            NotificationCenter.default.post(name: .folderPeekOpenTransferTray, object: NSValue(point: exitPoint))
-        }
+        finderDragMonitor = FinderDragMonitor(
+            onFilesDetected: { urls, exitPoint in
+                guard !urls.isEmpty else { return }
+                let autoShow = UserDefaults.standard.object(forKey: "autoShowOnDrag") as? Bool ?? true
+                guard autoShow else { return }
+                // Only show the tray as a drop target; files are added only when dropped into the tray.
+                NotificationCenter.default.post(name: .folderPeekOpenTransferTray, object: NSValue(point: exitPoint))
+            },
+            onDragEnded: {
+                // Drag released: if nothing was dropped into the tray, hide the empty drop target.
+                NotificationCenter.default.post(name: .folderPeekDragEndedOutsideTray, object: nil)
+            }
+        )
         finderDragMonitor?.start()
 
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -150,6 +157,9 @@ struct FolderPeekApp: App {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .folderPeekIngestTransferTrayURLs)) { notification in
                     ingestURLs(from: notification)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .folderPeekDragEndedOutsideTray)) { _ in
+                    hideTrayIfEmpty()
                 }
         }
         .windowStyle(.titleBar)
@@ -242,6 +252,15 @@ struct FolderPeekApp: App {
         transferTrayStore.restorePendingItemsToOriginBeforeClosingTray()
         for trayWindow in transferTrayWindows() {
             trayWindow.close()
+        }
+    }
+
+    private func hideTrayIfEmpty() {
+        // Defer so a drop landing on the tray has time to ingest its files before we check emptiness.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            guard let trayWindow = findTransferTrayWindow(), trayWindow.isVisible else { return }
+            guard transferTrayStore.items.isEmpty, !transferTrayStore.isProcessing else { return }
+            closeTransferTray()
         }
     }
 
