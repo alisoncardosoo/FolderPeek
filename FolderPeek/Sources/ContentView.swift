@@ -5,50 +5,89 @@ import FolderPeekCore
 
 // MARK: - Window Glass Accessor
 
-private let mainWindowFixedSize = NSSize(width: 512, height: 912)
+private let mainWindowMinimumContentSize = NSSize(width: 380, height: 360)
 private let mainWindowIdentifier = NSUserInterfaceItemIdentifier("folderpeek.mainWindow")
 
 private struct WindowGlassAccessor: NSViewRepresentable {
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
+        let coordinator = context.coordinator
         DispatchQueue.main.async {
-            guard let window = view.window else { return }
-            configure(window)
+            if let window = view.window { coordinator.attach(to: window) }
         }
         return view
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
+        let coordinator = context.coordinator
         DispatchQueue.main.async {
-            guard let window = nsView.window else { return }
-            configure(window)
+            if let window = nsView.window { coordinator.attach(to: window) }
         }
     }
 
-    private func configure(_ window: NSWindow) {
-        window.identifier = mainWindowIdentifier
-        window.titlebarAppearsTransparent = true
-        window.isMovableByWindowBackground = true
-        window.backgroundColor = .windowBackgroundColor
-        window.isRestorable = false
-        window.minSize = mainWindowFixedSize
-        window.maxSize = mainWindowFixedSize
-        window.styleMask.remove(.resizable)
-        window.standardWindowButton(.zoomButton)?.isEnabled = false
+    @MainActor
+    final class Coordinator: NSObject {
+        private weak var window: NSWindow?
 
-        guard window.frame.size != mainWindowFixedSize else {
-            return
+        func attach(to window: NSWindow) {
+            if self.window !== window {
+                NotificationCenter.default.removeObserver(self)
+                self.window = window
+                NotificationCenter.default.addObserver(
+                    self, selector: #selector(fitToScreen),
+                    name: NSWindow.didChangeScreenNotification, object: window
+                )
+                NotificationCenter.default.addObserver(
+                    self, selector: #selector(fitToScreen),
+                    name: NSApplication.didChangeScreenParametersNotification, object: nil
+                )
+            }
+            window.identifier = mainWindowIdentifier
+            window.titlebarAppearsTransparent = true
+            window.isMovableByWindowBackground = true
+            window.backgroundColor = .windowBackgroundColor
+            window.isRestorable = false
+            window.styleMask.insert(.resizable)
+            window.standardWindowButton(.zoomButton)?.isEnabled = true
+            fitToScreen()
         }
 
-        let currentFrame = window.frame
-        let fixedFrame = NSRect(
-            x: currentFrame.minX,
-            y: currentFrame.maxY - mainWindowFixedSize.height,
-            width: mainWindowFixedSize.width,
-            height: mainWindowFixedSize.height
-        )
-        window.setFrame(fixedFrame, display: true, animate: false)
+        @objc private func fitToScreen() {
+            guard let window, let screen = window.screen ?? NSScreen.main else { return }
+            let available = screen.visibleFrame.insetBy(dx: 12, dy: 12)
+            let minimumFrame = window.frameRect(forContentRect:
+                NSRect(origin: .zero, size: mainWindowMinimumContentSize)
+            )
+            window.minSize = NSSize(
+                width: min(minimumFrame.width, available.width),
+                height: min(minimumFrame.height, available.height)
+            )
+            let fittedFrame = mainWindowFrame(window.frame, fitting: available)
+            if window.frame != fittedFrame {
+                window.setFrame(fittedFrame, display: true)
+            }
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
     }
+}
+
+// Use the visible frame so the title bar and bottom edge stay clear of the menu bar and Dock.
+func mainWindowFrame(_ frame: NSRect, fitting available: NSRect) -> NSRect {
+    let size = NSSize(
+        width: min(frame.width, available.width),
+        height: min(frame.height, available.height)
+    )
+    return NSRect(
+        x: max(available.minX, min(frame.minX, available.maxX - size.width)),
+        y: max(available.minY, min(frame.maxY - size.height, available.maxY - size.height)),
+        width: size.width,
+        height: size.height
+    )
 }
 
 // MARK: - App Tab
@@ -92,7 +131,10 @@ struct ContentView: View {
             tabContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: mainWindowFixedSize.width, height: mainWindowFixedSize.height)
+        .frame(minWidth: mainWindowMinimumContentSize.width,
+               maxWidth: .infinity,
+               minHeight: mainWindowMinimumContentSize.height,
+               maxHeight: .infinity)
         .background(WindowGlassAccessor().frame(width: 0, height: 0))
     }
 
@@ -109,8 +151,8 @@ struct ContentView: View {
 
     @available(macOS 26.0, *)
     private var glassTabBar: some View {
-        GlassEffectContainer(spacing: 10) {
-            HStack(spacing: 10) {
+        GlassEffectContainer(spacing: 6) {
+            HStack(spacing: 6) {
                 ForEach(AppTab.allCases, id: \.label) { tab in
                     let isSelected = selectedTab == tab
                     Button { selectedTab = tab } label: {
@@ -123,7 +165,7 @@ struct ContentView: View {
                         .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
-                        .padding(.horizontal, 18)
+                        .padding(.horizontal, 4)
                         .contentShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .buttonStyle(.plain)
@@ -255,7 +297,7 @@ private struct HomeTab: View {
                 .textSelection(.enabled)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
-            HStack(spacing: 10) {
+            AdaptiveActionRow {
                 Button {
                     AppActions.revealAppInFinder()
                 } label: {
@@ -643,7 +685,7 @@ private struct DonationTab: View {
                 .textSelection(.enabled)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
-            HStack(spacing: 10) {
+            AdaptiveActionRow {
                 Button {
                     copyPixKey()
                 } label: {
@@ -794,7 +836,7 @@ private struct FullDiskAccessCard: View {
                 Spacer(minLength: 0)
             }
 
-            HStack(spacing: 10) {
+            AdaptiveActionRow {
                 if state.isGranted {
                     // Permissão ativa — botão neutro para abrir ajustes se quiser
                     Button {
@@ -861,16 +903,34 @@ private struct PeekSectionLabel: View {
     }
 }
 
+private struct AdaptiveActionRow<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10, content: content)
+                .fixedSize(horizontal: true, vertical: false)
+            VStack(alignment: .leading, spacing: 10, content: content)
+        }
+    }
+}
+
 private struct PeekRow<Control: View>: View {
     let label: String
     let icon: String
     @ViewBuilder let control: Control
 
     var body: some View {
-        HStack {
-            Label(label, systemImage: icon)
-            Spacer()
-            control
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                Label(label, systemImage: icon)
+                Spacer()
+                control
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                Label(label, systemImage: icon)
+                control
+            }
         }
     }
 }

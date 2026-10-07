@@ -33,28 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSWindow.allowsAutomaticWindowTabbing = false
-        NSApp.setActivationPolicy(.regular)
-
-        let nc = NotificationCenter.default
-        nc.addObserver(forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main) { _ in
-            Task { @MainActor in
-                self.syncDockPolicy()
-            }
-        }
-        nc.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.syncDockPolicy() }
-        }
-
-        applyDockIcon()
-        DistributedNotificationCenter.default().addObserver(
-            forName: NSNotification.Name("AppleInterfaceThemeChangedNotification"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.applyDockIcon()
-            }
-        }
+        NSApp.setActivationPolicy(.accessory)
 
         hotKeyMonitor = GlobalHotKeyMonitor {
             NotificationCenter.default.post(name: .folderPeekToggleTransferTray, object: nil)
@@ -75,13 +54,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         )
         finderDragMonitor?.start()
-
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
-
-        // Aguarda a janela principal aparecer antes de exibir o alerta de FDA
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            AppActions.checkAndPromptForFullDiskAccessIfNeeded()
-        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -89,27 +61,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         finderDragMonitor?.stop()
     }
 
-    private func syncDockPolicy() {
-        let hasVisibleRegularWindow = NSApp.windows.contains {
-            $0.isVisible && ($0.level == .normal || $0.identifier == transferTrayWindowIdentifier)
-        }
-        NSApp.setActivationPolicy(hasVisibleRegularWindow ? .regular : .accessory)
-
-        if hasVisibleRegularWindow {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.applyDockIcon()
-            }
-        }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 
-    private func applyDockIcon() {
-        let style = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") ?? ""
-        let isDark = style.lowercased().contains("dark")
-        if isDark, let icon = scaledAppIcon(named: "AppIconDark", size: NSSize(width: 1024, height: 1024)) {
-            NSApp.applicationIconImage = icon
-        } else {
-            NSApp.applicationIconImage = nil
-        }
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        false
     }
 }
 
@@ -140,49 +97,10 @@ struct FolderPeekApp: App {
     @AppStorage("appearanceMode") private var appearanceMode = PreviewAppearanceMode.system.rawValue
     @StateObject private var updaterController = UpdaterController()
     @StateObject private var transferTrayStore = TransferTrayStore()
-    @Environment(\.openWindow) private var openWindow
+    @State private var mainWindow: NSWindow?
+    @State private var trayWindow: NSWindow?
 
     var body: some Scene {
-        Window("Folder Peek", id: "main") {
-            ContentView(updaterController: updaterController)
-                .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenMainWindow)) { _ in
-                    openMainWindow()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenTransferTray)) { notification in
-                    openTransferTray(at: (notification.object as? NSValue)?.pointValue)
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekToggleTransferTray)) { _ in
-                    toggleTransferTray()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekIngestTransferTrayURLs)) { notification in
-                    ingestURLs(from: notification)
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekDragEndedOutsideTray)) { _ in
-                    hideTrayIfEmpty()
-                }
-        }
-        .windowStyle(.titleBar)
-        .windowResizability(.contentSize)
-        .defaultSize(width: 512, height: 912)
-
-        Window("Bandeja Temporária", id: "transferTray") {
-            TransferTrayWindowView(
-                store: transferTrayStore,
-                hideWindow: closeTransferTray,
-                configureWindow: configureTransferTrayWindow
-            )
-            .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
-            .onReceive(NotificationCenter.default.publisher(for: .folderPeekIngestTransferTrayURLs)) { notification in
-                ingestURLs(from: notification)
-            }
-            .onChange(of: transferTrayStore.items.count) { _, count in
-                resizeTrayWindow(to: count)
-            }
-        }
-        .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: transferTrayInitialSize.width, height: transferTrayInitialSize.height)
-
         MenuBarExtra {
             MenuBarContent(
                 updaterController: updaterController,
@@ -199,6 +117,12 @@ struct FolderPeekApp: App {
                         .font(.system(size: 10, weight: .semibold))
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenMainWindow)) { _ in
+                openMainWindow()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .folderPeekDragEndedOutsideTray)) { _ in
+                hideTrayIfEmpty()
+            }
             .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenTransferTray)) { notification in
                 openTransferTray(at: (notification.object as? NSValue)?.pointValue)
             }
@@ -213,15 +137,6 @@ struct FolderPeekApp: App {
         Settings {
             PreferencesView(updaterController: updaterController)
                 .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenTransferTray)) { notification in
-                    openTransferTray(at: (notification.object as? NSValue)?.pointValue)
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekToggleTransferTray)) { _ in
-                    toggleTransferTray()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .folderPeekIngestTransferTrayURLs)) { notification in
-                    ingestURLs(from: notification)
-                }
         }
     }
 
@@ -229,23 +144,73 @@ struct FolderPeekApp: App {
         scaledAppIcon(named: "FolderPeekMenuBarIcon", size: NSSize(width: 18, height: 18))
     }
 
+    // Create windows only on demand so launch and relaunch stay in the menu bar on macOS 14+.
     private func openMainWindow() {
-        openWindow(id: "main")
-        NSApp.setActivationPolicy(.regular)
+        let window: NSWindow
+        if let existingWindow = mainWindow {
+            window = existingWindow
+        } else {
+            window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 512, height: 912),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = "Folder Peek"
+            window.isReleasedWhenClosed = false
+            window.isRestorable = false
+            window.contentViewController = NSHostingController(rootView:
+                AppWindowContent {
+                    ContentView(updaterController: updaterController)
+                }
+            )
+            window.center()
+            mainWindow = window
+        }
+        if let screen = window.screen ?? NSScreen.main {
+            window.setFrame(
+                mainWindowFrame(window.frame, fitting: screen.visibleFrame.insetBy(dx: 12, dy: 12)),
+                display: false
+            )
+        }
+        window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            guard window.isVisible else { return }
+            AppActions.checkAndPromptForFullDiskAccessIfNeeded()
+        }
     }
 
     private func openTransferTray(at exitPoint: NSPoint? = nil) {
-        openWindow(id: "transferTray")
-        NSApp.setActivationPolicy(.regular)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
-            guard let trayWindow = findTransferTrayWindow() else { return }
-            closeExtraTransferTrayWindows(keeping: trayWindow)
-            configureTransferTrayWindow(trayWindow)
-            positionTransferTrayWindow(trayWindow, at: exitPoint)
-            trayWindow.makeKeyAndOrderFront(nil)
+        let window: NSWindow
+        if let existingWindow = trayWindow {
+            window = existingWindow
+        } else {
+            window = NSWindow(
+                contentRect: NSRect(origin: .zero, size: transferTrayInitialSize),
+                styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
+                backing: .buffered,
+                defer: false
+            )
+            window.contentViewController = NSHostingController(rootView:
+                AppWindowContent {
+                    TransferTrayWindowView(
+                        store: transferTrayStore,
+                        hideWindow: closeTransferTray,
+                        configureWindow: configureTransferTrayWindow
+                    )
+                    .onChange(of: transferTrayStore.items.count) { _, count in
+                        resizeTrayWindow(to: count)
+                    }
+                }
+            )
+            trayWindow = window
         }
+        configureTransferTrayWindow(window)
+        positionTransferTrayWindow(window, at: exitPoint)
+        window.makeKeyAndOrderFront(nil)
     }
 
     private func closeTransferTray() {
@@ -365,12 +330,6 @@ struct FolderPeekApp: App {
         NSApp.windows.filter { $0.identifier == transferTrayWindowIdentifier }
     }
 
-    private func closeExtraTransferTrayWindows(keeping primaryWindow: NSWindow) {
-        for window in transferTrayWindows() where window !== primaryWindow {
-            window.close()
-        }
-    }
-
     private func clampedOrigin(_ origin: NSPoint, windowSize: NSSize, in visibleFrame: NSRect) -> NSPoint {
         let minX = visibleFrame.minX + 8
         let maxX = visibleFrame.maxX - windowSize.width - 8
@@ -383,6 +342,17 @@ struct FolderPeekApp: App {
         )
     }
 
+}
+
+// Each hosted window observes appearance changes independently of the menu bar scene.
+private struct AppWindowContent<Content: View>: View {
+    @AppStorage("appearanceMode") private var appearanceMode = PreviewAppearanceMode.system.rawValue
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        content()
+            .preferredColorScheme(PreviewAppearanceMode(storedValue: appearanceMode).colorScheme)
+    }
 }
 
 private extension PreviewAppearanceMode {
