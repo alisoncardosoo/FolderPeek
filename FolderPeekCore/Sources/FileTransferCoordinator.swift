@@ -8,6 +8,23 @@ public enum FileTransferCoordinatorError: Error, Equatable {
 public struct FileTransferCoordinator {
     public init() {}
 
+    /// The receiver chooses the exact promised path (including collision handling).
+    /// Report failure instead of silently delivering a differently named file.
+    public func fulfillPromise(from source: URL, to destination: URL) throws {
+        let manager = FileManager.default
+        do {
+            try manager.moveItem(at: source, to: destination)
+        } catch {
+            try manager.copyItem(at: source, to: destination)
+            do {
+                try manager.removeItem(at: source)
+            } catch {
+                try? manager.removeItem(at: destination)
+                throw error
+            }
+        }
+    }
+
     public func validateDestination(_ destination: URL?) throws -> URL {
         guard let destination else {
             throw FileTransferCoordinatorError.destinationMissing

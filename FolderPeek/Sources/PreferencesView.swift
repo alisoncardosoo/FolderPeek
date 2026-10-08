@@ -11,6 +11,7 @@ struct PreferencesView: View {
     @AppStorage("foldersFirst") private var foldersFirst = PreviewPreferences.default.foldersFirst
     @AppStorage("itemLimit") private var itemLimit = PreviewPreferences.default.itemLimit
     @AppStorage("autoShowOnDrag") private var autoShowOnDrag = true
+    @AppStorage("transferTrayPosition") private var transferTrayPosition = TransferTrayPosition.topRight.rawValue
     @AppStorage("shelfHotkeyCode") private var hotkeyCode = 49
     @AppStorage("shelfHotkeyModifiers") private var hotkeyModifiers = 786432
     @AppStorage("shelfHotkeyDisplayName") private var hotkeyDisplayName = "Space"
@@ -38,6 +39,14 @@ struct PreferencesView: View {
 
             Section("Bandeja temporária") {
                 Toggle("Abrir bandeja ao iniciar drag no Finder", isOn: $autoShowOnDrag)
+                Picker("Posição da bandeja", selection: $transferTrayPosition) {
+                    ForEach(TransferTrayPosition.allCases) { position in
+                        Text(position.title).tag(position.rawValue)
+                    }
+                }
+                Text("Posição fixa no monitor onde a bandeja for acionada.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 HotkeyRecorderRow(
                     hotkeyCode: $hotkeyCode,
                     hotkeyModifiers: $hotkeyModifiers,

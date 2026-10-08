@@ -81,3 +81,60 @@ final class FileTransferCoordinatorTests: XCTestCase {
         XCTAssertFalse(message.isEmpty)
     }
 }
+
+final class FilePromiseTransferTests: XCTestCase {
+    private func withDirectories(_ body: (URL, URL) throws -> Void) throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let source = root.appendingPathComponent("origin")
+        let destination = root.appendingPathComponent("destination")
+        try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try body(source, destination)
+    }
+
+    func testFileIsDeliveredToExactPromisedPath() throws {
+        try withDirectories { origin, destination in
+            let source = origin.appendingPathComponent("arquivo.txt")
+            let target = destination.appendingPathComponent("arquivo 2.txt")
+            try "conteúdo".write(to: source, atomically: true, encoding: .utf8)
+            try FileTransferCoordinator().fulfillPromise(from: source, to: target)
+            XCTAssertEqual(try String(contentsOf: target, encoding: .utf8), "conteúdo")
+            XCTAssertFalse(FileManager.default.fileExists(atPath: source.path))
+        }
+    }
+
+    func testCollisionPreservesBothFilesAndReportsFailure() throws {
+        try withDirectories { origin, destination in
+            let source = origin.appendingPathComponent("arquivo.txt")
+            let target = destination.appendingPathComponent("arquivo.txt")
+            try "origem".write(to: source, atomically: true, encoding: .utf8)
+            try "destino".write(to: target, atomically: true, encoding: .utf8)
+            XCTAssertThrowsError(try FileTransferCoordinator().fulfillPromise(from: source, to: target))
+            XCTAssertEqual(try String(contentsOf: source, encoding: .utf8), "origem")
+            XCTAssertEqual(try String(contentsOf: target, encoding: .utf8), "destino")
+        }
+    }
+
+    func testFolderIsDeliveredWithoutExtraNesting() throws {
+        try withDirectories { origin, destination in
+            let source = origin.appendingPathComponent("pasta")
+            let target = destination.appendingPathComponent("pasta")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            try "teste".write(to: source.appendingPathComponent("item.txt"), atomically: true, encoding: .utf8)
+            try FileTransferCoordinator().fulfillPromise(from: source, to: target)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: target.appendingPathComponent("item.txt").path))
+            XCTAssertFalse(FileManager.default.fileExists(atPath: source.path))
+        }
+    }
+
+    func testInvalidDestinationKeepsSource() throws {
+        try withDirectories { origin, destination in
+            let source = origin.appendingPathComponent("arquivo.txt")
+            try "origem".write(to: source, atomically: true, encoding: .utf8)
+            let target = destination.appendingPathComponent("missing/file.txt")
+            XCTAssertThrowsError(try FileTransferCoordinator().fulfillPromise(from: source, to: target))
+            XCTAssertEqual(try String(contentsOf: source, encoding: .utf8), "origem")
+        }
+    }
+}

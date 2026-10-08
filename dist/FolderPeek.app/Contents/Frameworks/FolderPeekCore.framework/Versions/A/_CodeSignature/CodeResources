@@ -11,6 +11,34 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>Modules/FolderPeekCore.swiftmodule/arm64-apple-macos.abi.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Qnesa0n4URGWAopawg9bGx36dUwkYV00BoCJ8LFzlyg=
+			</data>
+		</dict>
+		<key>Modules/FolderPeekCore.swiftmodule/arm64-apple-macos.swiftdoc</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			nq/AkyHJRINUZCp1//mfLpOsF2+dX9Y83yng0DYJZcA=
+			</data>
+		</dict>
+		<key>Modules/FolderPeekCore.swiftmodule/arm64-apple-macos.swiftmodule</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			sM9FvDzOerkDJujjszYjPyG9cFcPWezcYL6Rypeoe78=
+			</data>
+		</dict>
+		<key>Modules/FolderPeekCore.swiftmodule/arm64-apple-macos.swiftsourceinfo</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			WTvLNiO+1sJZqG9iQBi8p07tquHyOtWnghN45NUQDWA=
+			</data>
+		</dict>
 		<key>Resources/Info.plist</key>
 		<dict>
 			<key>hash2</key>

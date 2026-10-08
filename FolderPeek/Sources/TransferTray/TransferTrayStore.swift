@@ -26,6 +26,7 @@ final class TransferTrayStore: ObservableObject {
     @Published var operation: TransferOperation = .copy
     @Published private(set) var destinationURL: URL?
     @Published var isProcessing = false
+    @Published private(set) var pendingDropCount = 0
     @Published var statusMessage: String?
     @Published var showMoveConfirmation = false
     @Published var transferProgress: Double = 0
@@ -64,6 +65,9 @@ final class TransferTrayStore: ObservableObject {
         !items.isEmpty && destinationURL != nil && !isProcessing
     }
 
+    func beginReceivingDrop() { pendingDropCount += 1 }
+    func finishReceivingDrop() { pendingDropCount = max(0, pendingDropCount - 1) }
+
     func thumbnail(for item: Item) -> NSImage {
         if let cached = thumbnailCache[item.url] {
             return cached
@@ -85,6 +89,15 @@ final class TransferTrayStore: ObservableObject {
 
         for droppedURL in urls where droppedURL.isFileURL {
             let normalizedDroppedURL = normalizedFilePathURL(from: droppedURL)
+            let canonical = TransferItemCollection.canonicalPath(for: normalizedDroppedURL)
+            if collection.contains(normalizedDroppedURL) || items.contains(where: {
+                $0.originalURL.map { TransferItemCollection.canonicalPath(for: $0) } == canonical
+            }) { continue }
+            // Check capacity before moving anything out of its original location.
+            guard collection.items.count + stagedURLs.count < collection.limit else {
+                failedCount += 1
+                continue
+            }
             do {
                 let staged = try stageFileIfNeeded(normalizedDroppedURL, trayDirectoryURL: trayDirectoryURL)
                 let stagedCanonical = TransferItemCollection.canonicalPath(for: staged.stagedURL)
@@ -544,7 +557,11 @@ final class TransferTrayStore: ObservableObject {
         let sourceCanonical = TransferItemCollection.canonicalPath(for: sourceURL)
         let trayCanonical = TransferItemCollection.canonicalPath(for: trayDirectoryURL)
 
-        if sourceCanonical.hasPrefix(trayCanonical + "/") || sourceCanonical == trayCanonical {
+        guard !trayCanonical.hasPrefix(sourceCanonical + "/"), sourceCanonical != trayCanonical else {
+            throw CocoaError(.fileWriteInvalidFileName)
+        }
+
+        if sourceCanonical.hasPrefix(trayCanonical + "/") {
             return StagedFileResult(
                 stagedURL: sourceURL,
                 originalURL: nil,

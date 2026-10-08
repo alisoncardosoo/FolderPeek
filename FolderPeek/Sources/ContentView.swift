@@ -6,6 +6,7 @@ import FolderPeekCore
 // MARK: - Window Glass Accessor
 
 private let mainWindowMinimumContentSize = NSSize(width: 380, height: 360)
+let mainWindowDefaultContentSize = NSSize(width: 512, height: 912)
 private let mainWindowIdentifier = NSUserInterfaceItemIdentifier("folderpeek.mainWindow")
 
 private struct WindowGlassAccessor: NSViewRepresentable {
@@ -132,8 +133,10 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(minWidth: mainWindowMinimumContentSize.width,
+               idealWidth: mainWindowDefaultContentSize.width,
                maxWidth: .infinity,
                minHeight: mainWindowMinimumContentSize.height,
+               idealHeight: mainWindowDefaultContentSize.height,
                maxHeight: .infinity)
         .background(WindowGlassAccessor().frame(width: 0, height: 0))
     }
@@ -393,6 +396,8 @@ private struct SettingsTab: View {
     @Binding var itemLimit: Int
 
     @AppStorage("autoShowOnDrag") private var autoShowOnDrag = true
+    @AppStorage("transferTrayPosition") private var transferTrayPosition = TransferTrayPosition.topRight.rawValue
+    @AppStorage("transferTrayActivationMode") private var transferTrayActivationMode = TransferTrayActivationMode.both.rawValue
     @AppStorage("shelfHotkeyModifiers") private var hotkeyModifiers = 786432
     @AppStorage("shelfHotkeyDisplayName") private var hotkeyDisplayName = "Space"
     @State private var fullDiskAccessState: FullDiskAccessState = AppActions.fullDiskAccessState()
@@ -464,9 +469,33 @@ private struct SettingsTab: View {
         VStack(alignment: .leading, spacing: 8) {
             PeekSectionLabel(icon: "tray.and.arrow.down.fill", title: "Bandeja Temporária")
             PeekCard {
-                PeekRow(label: "Abrir ao iniciar drag no Finder", icon: "hand.draw") {
+                PeekRow(label: "Abrir automaticamente ao arrastar", icon: "hand.draw") {
                     Toggle("", isOn: $autoShowOnDrag).labelsHidden()
                 }
+                Divider()
+                PeekRow(label: "Ativar bandeja", icon: "cursorarrow.motionlines") {
+                    Picker("Ativar bandeja", selection: $transferTrayActivationMode) {
+                        Text("Sacudir").tag(TransferTrayActivationMode.shake.rawValue)
+                        Text("Sair do Finder").tag(TransferTrayActivationMode.finderExit.rawValue)
+                        Text("Ambos").tag(TransferTrayActivationMode.both.rawValue)
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .disabled(!autoShowOnDrag)
+                }
+                Divider()
+                PeekRow(label: "Posição da bandeja", icon: "rectangle.inset.topright.filled") {
+                    Picker("Posição da bandeja", selection: $transferTrayPosition) {
+                        ForEach(TransferTrayPosition.allCases) { position in
+                            Text(position.title).tag(position.rawValue)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                }
+                Text("Posição fixa no monitor onde a bandeja for acionada.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Divider()
                 PeekRow(label: "Atalho de teclado", icon: "keyboard") {
                     Text(hotkeyLabel)

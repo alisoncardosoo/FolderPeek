@@ -64,8 +64,9 @@ O projeto é voltado para pessoas desenvolvedoras e usuários avançados de macO
 - Ao arrastar itens para fora da bandeja, eles saem da lista automaticamente.
 - Se você fechar a bandeja com itens pendentes, o app tenta devolver esses itens para a pasta de origem.
 - Para permitir mover e devolver arquivos reais, o app principal é assinado sem App Sandbox; a extensão Quick Look continua isolada.
-- Gatilho automático ao detectar arrasto de arquivos no Finder.
-- A bandeja abre colada ao lado direito do Finder quando possível.
+- Ativação automática configurável: sacudir o arquivo arrastado, sair da janela de origem do Finder ou ambos (padrão).
+- A bandeja abre em uma posição fixa do monitor, escolhida em Configurações → Bandeja Temporária → Posição da bandeja: qualquer canto ou centro superior (superior direito por padrão).
+- O fundo fosco usa blur nativo atrás da janela e acompanha o tema claro/escuro do app.
 - Atalho global padrão para abrir/ocultar: `Control + Option + Space`.
 - Observação V1: selecionar múltiplos arquivos sem arrastar não abre a bandeja automaticamente.
 
@@ -144,7 +145,7 @@ xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration D
 
 ### 6) Usar a bandeja (pasta real)
 
-1. No Finder, comece a arrastar arquivos para abrir a bandeja automaticamente.
+1. No Finder, arraste arquivos e sacuda o mouse ou saia da janela de origem para abrir a bandeja. Em Configurações → Bandeja Temporária → Ativar bandeja, escolha Sacudir, Sair do Finder ou Ambos.
 2. Alternativa manual: pressione `Control + Option + Space`.
 3. Solte os arquivos na bandeja.
 4. Arraste os itens da bandeja para a pasta desejada no Finder.

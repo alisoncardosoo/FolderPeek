@@ -5,9 +5,7 @@ import FolderPeekCore
 import UserNotifications
 
 fileprivate let transferTrayWindowIdentifier = NSUserInterfaceItemIdentifier("folderpeek.transferTrayWindow")
-// Initial window size for 2-column × 2-row grid: (14+2)×2 horiz pad + 2×100 tiles + 10 spacing = 242w
-// Height: 78px fixed (header + padding) + 82px per row × 2 rows = 242h
-fileprivate let transferTrayInitialSize = NSSize(width: 242, height: 242)
+fileprivate let transferTrayInitialSize = TransferTrayLayout(itemCount: 0).windowSize
 
 extension Notification.Name {
     static let folderPeekOpenMainWindow = Notification.Name("FolderPeekOpenMainWindow")
@@ -95,6 +93,7 @@ final class TransferTrayWindowDelegate: NSObject, NSWindowDelegate {
 struct FolderPeekApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("appearanceMode") private var appearanceMode = PreviewAppearanceMode.system.rawValue
+    @AppStorage("transferTrayPosition") private var transferTrayPosition = TransferTrayPosition.topRight.rawValue
     @StateObject private var updaterController = UpdaterController()
     @StateObject private var transferTrayStore = TransferTrayStore()
     @State private var mainWindow: NSWindow?
@@ -126,6 +125,10 @@ struct FolderPeekApp: App {
             .onReceive(NotificationCenter.default.publisher(for: .folderPeekOpenTransferTray)) { notification in
                 openTransferTray(at: (notification.object as? NSValue)?.pointValue)
             }
+            .onChange(of: transferTrayPosition) { _, _ in
+                guard let window = findTransferTrayWindow(), window.isVisible else { return }
+                positionTransferTrayWindow(window, on: window.screen)
+            }
             .onReceive(NotificationCenter.default.publisher(for: .folderPeekToggleTransferTray)) { _ in
                 toggleTransferTray()
             }
@@ -151,7 +154,7 @@ struct FolderPeekApp: App {
             window = existingWindow
         } else {
             window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 512, height: 912),
+                contentRect: NSRect(origin: .zero, size: mainWindowDefaultContentSize),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable],
                 backing: .buffered,
                 defer: false
@@ -159,11 +162,15 @@ struct FolderPeekApp: App {
             window.title = "Folder Peek"
             window.isReleasedWhenClosed = false
             window.isRestorable = false
-            window.contentViewController = NSHostingController(rootView:
+            let hostingController = NSHostingController(rootView:
                 AppWindowContent {
                     ContentView(updaterController: updaterController)
                 }
             )
+            // AppKit owns the opening size; SwiftUI only supplies the resize minimum.
+            hostingController.sizingOptions = [.minSize]
+            window.contentViewController = hostingController
+            window.setContentSize(mainWindowDefaultContentSize)
             window.center()
             mainWindow = window
         }
@@ -199,21 +206,25 @@ struct FolderPeekApp: App {
                     TransferTrayWindowView(
                         store: transferTrayStore,
                         hideWindow: closeTransferTray,
-                        configureWindow: configureTransferTrayWindow
+                        configureWindow: configureTransferTrayWindow,
+                        resizeWindow: resizeTrayWindow
                     )
-                    .onChange(of: transferTrayStore.items.count) { _, count in
-                        resizeTrayWindow(to: count)
-                    }
                 }
             )
             trayWindow = window
         }
         configureTransferTrayWindow(window)
         positionTransferTrayWindow(window, at: exitPoint)
-        window.makeKeyAndOrderFront(nil)
+        if exitPoint != nil {
+            // Keep Finder as the active drag source while exposing the drop target.
+            window.orderFrontRegardless()
+        } else {
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 
     private func closeTransferTray() {
+        guard transferTrayStore.pendingDropCount == 0 else { return }
         transferTrayStore.restorePendingItemsToOriginBeforeClosingTray()
         for trayWindow in transferTrayWindows() {
             trayWindow.close()
@@ -224,7 +235,8 @@ struct FolderPeekApp: App {
         // Defer so a drop landing on the tray has time to ingest its files before we check emptiness.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             guard let trayWindow = findTransferTrayWindow(), trayWindow.isVisible else { return }
-            guard transferTrayStore.items.isEmpty, !transferTrayStore.isProcessing else { return }
+            guard transferTrayStore.items.isEmpty, !transferTrayStore.isProcessing,
+                  transferTrayStore.pendingDropCount == 0 else { return }
             closeTransferTray()
         }
     }
@@ -249,6 +261,7 @@ struct FolderPeekApp: App {
         let alreadyConfigured = window.identifier == transferTrayWindowIdentifier
         TransferTrayWindowDelegate.shared.shouldAutoHide = {
             transferTrayStore.items.isEmpty && !transferTrayStore.isProcessing
+                && transferTrayStore.pendingDropCount == 0
         }
         TransferTrayWindowDelegate.shared.hideAction = { closeTransferTray() }
         TransferTrayWindowDelegate.shared.beforeCloseAction = {
@@ -265,8 +278,8 @@ struct FolderPeekApp: App {
         window.isRestorable = false
         window.isOpaque = false
         window.backgroundColor = .clear
-        window.minSize = NSSize(width: 220, height: 200)
-        window.maxSize = NSSize(width: 900, height: 700)
+        window.minSize = trayWindowSize(for: 0)
+        window.maxSize = trayWindowSize(for: 9)
         window.styleMask.insert(.resizable)
         window.styleMask.remove(.miniaturizable)
         window.collectionBehavior.insert(.canJoinAllSpaces)
@@ -288,37 +301,34 @@ struct FolderPeekApp: App {
         transferTrayWindows().first
     }
 
-    private func positionTransferTrayWindow(_ window: NSWindow, at exitPoint: NSPoint? = nil) {
-        let windowSize = trayWindowSize(for: transferTrayStore.items.count)
+    private func positionTransferTrayWindow(
+        _ window: NSWindow, at exitPoint: NSPoint? = nil, on screen: NSScreen? = nil
+    ) {
         let pointer = exitPoint ?? NSEvent.mouseLocation
-        var targetOrigin = NSPoint(
-            x: pointer.x,
-            y: pointer.y - windowSize.height / 2
+        guard let targetScreen = screen
+            ?? NSScreen.screens.first(where: { NSMouseInRect(pointer, $0.frame, false) })
+            ?? NSScreen.main else { return }
+        let frame = TransferTrayPosition(storedValue: transferTrayPosition).frame(
+            windowSize: trayWindowSize(for: transferTrayStore.items.count),
+            in: targetScreen.visibleFrame
         )
-        let screen = NSScreen.screens.first(where: { NSMouseInRect(pointer, $0.frame, false) }) ?? NSScreen.main
-        if let visible = screen?.visibleFrame {
-            targetOrigin = clampedOrigin(targetOrigin, windowSize: windowSize, in: visible)
-        }
-        window.setFrame(NSRect(origin: targetOrigin, size: windowSize), display: true)
+        window.setFrame(frame, display: true)
     }
 
-    private func trayWindowSize(for itemCount: Int, windowWidth: CGFloat = 242) -> NSSize {
-        // Grid layout constants (from TransferTrayWindowView):
-        // tile cell h = 58 image + 6+6 padding = 70; row spacing = 12; grid v-pad = 8
-        // fixed overhead (header + padding) ≈ 78px; per-row cost = 82px (70 cell + 12 spacing, last row no spacing → amortized)
-        let cols = max(1, Int((windowWidth - 22) / 98))  // adaptive: floor((w-22)/98)
-        let rows = max(2, min(5, Int(ceil(Double(max(1, itemCount)) / Double(cols)))))
-        let height: CGFloat = 78 + 82 * CGFloat(rows)
-        return NSSize(width: windowWidth, height: height)
+    private func trayWindowSize(for itemCount: Int) -> NSSize {
+        TransferTrayViewMode.saved.windowSize(itemCount: itemCount)
     }
 
     private func resizeTrayWindow(to itemCount: Int) {
         guard let window = findTransferTrayWindow(), window.isVisible else { return }
-        let newSize = trayWindowSize(for: itemCount, windowWidth: window.frame.width)
-        guard abs(newSize.height - window.frame.height) > 4 else { return }
-        var frame = window.frame
-        frame.origin.y -= newSize.height - frame.height  // grow upward
-        frame.size.height = newSize.height
+        window.minSize = trayWindowSize(for: 0)
+        window.maxSize = trayWindowSize(for: 9)
+        let newSize = trayWindowSize(for: itemCount)
+        guard window.frame.size != newSize else { return }
+        guard let screen = window.screen ?? NSScreen.main else { return }
+        let frame = TransferTrayPosition(storedValue: transferTrayPosition).frame(
+            windowSize: newSize, in: screen.visibleFrame
+        )
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.22
             ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
@@ -330,17 +340,6 @@ struct FolderPeekApp: App {
         NSApp.windows.filter { $0.identifier == transferTrayWindowIdentifier }
     }
 
-    private func clampedOrigin(_ origin: NSPoint, windowSize: NSSize, in visibleFrame: NSRect) -> NSPoint {
-        let minX = visibleFrame.minX + 8
-        let maxX = visibleFrame.maxX - windowSize.width - 8
-        let minY = visibleFrame.minY + 8
-        let maxY = visibleFrame.maxY - windowSize.height - 8
-
-        return NSPoint(
-            x: max(minX, min(maxX, origin.x)),
-            y: max(minY, min(maxY, origin.y))
-        )
-    }
 
 }
 

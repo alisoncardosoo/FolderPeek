@@ -6,19 +6,20 @@ final class FinderDragMonitor {
     private let pollInterval: TimeInterval
     private let onFilesDetected: ([URL], NSPoint) -> Void
     private let onDragEnded: () -> Void
-
     private var timer: Timer?
-    private var dragEventMonitor: Any?
-    private var mouseUpEventMonitor: Any?
-    private var lastChangeCount = -1
-    private var lastSeenCanonicalPaths: Set<String> = []
-    private var finderDragPending = false
-    private var cachedFinderFrames: [CGRect] = []
-    // True once the tray has been shown for the in-flight drag, so mouse-up knows to check for hide.
+    private var globalEventMonitor: Any?
+    private var localEventMonitor: Any?
+    private var lastChangeCount = NSPasteboard(name: .drag).changeCount
+    private var isTrackingPress = false
+    private var pressStartedInFinder = false
+    private var pressOrigin = NSPoint.zero
+    private var fileURLs: [URL] = []
+    private var shakeDetector = DragShakeDetector()
+    private var finderWindowExitDetector = FinderWindowExitDetector(windowFrame: nil)
     private var didShowTrayForCurrentDrag = false
 
     init(
-        pollInterval: TimeInterval = 0.10,
+        pollInterval: TimeInterval = 1.0 / 60.0,
         onFilesDetected: @escaping ([URL], NSPoint) -> Void,
         onDragEnded: @escaping () -> Void = {}
     ) {
@@ -29,126 +30,132 @@ final class FinderDragMonitor {
 
     func start() {
         stop()
-
-        // Monitors the global drag pasteboard; only fires when drag originates from Finder.
-        dragEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged) { [weak self] _ in
+        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .leftMouseDragged, .leftMouseUp]
+        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] event in
+            self?.handle(event)
+        }
+        // Global monitors exclude our own windows, including a release over the tray.
+        localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: mask) { [weak self] event in
+            self?.handle(event)
+            return event
+        }
+        let timer = Timer(timeInterval: pollInterval, repeats: true) { [weak self] _ in
             self?.pollDragPasteboard()
         }
-
-        // Detects drag release so a tray shown as drop target can hide if nothing was dropped into it.
-        mouseUpEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp) { [weak self] _ in
-            self?.handleMouseUp()
-        }
-
-        // Polling as complementary fallback for apps that don't trigger the global monitor reliably.
-        timer = Timer.scheduledTimer(withTimeInterval: pollInterval, repeats: true) { [weak self] _ in
-            self?.pollDragPasteboard()
-        }
-        RunLoop.main.add(timer!, forMode: .common)
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     func stop() {
         timer?.invalidate()
         timer = nil
+        if let globalEventMonitor { NSEvent.removeMonitor(globalEventMonitor) }
+        if let localEventMonitor { NSEvent.removeMonitor(localEventMonitor) }
+        globalEventMonitor = nil
+        localEventMonitor = nil
+        resetPress()
+    }
 
-        if let monitor = dragEventMonitor {
-            NSEvent.removeMonitor(monitor)
-            dragEventMonitor = nil
-        }
+    deinit { stop() }
 
-        if let monitor = mouseUpEventMonitor {
-            NSEvent.removeMonitor(monitor)
-            mouseUpEventMonitor = nil
+    private func handle(_ event: NSEvent) {
+        switch event.type {
+        case .leftMouseDown:
+            resetPress()
+            beginPressIfNeeded()
+        case .leftMouseUp:
+            endPress()
+        default:
+            pollDragPasteboard()
         }
     }
 
-    deinit {
-        stop()
+    private func beginPressIfNeeded() {
+        guard !isTrackingPress else { return }
+        isTrackingPress = true
+        pressOrigin = NSEvent.mouseLocation
+        pressStartedInFinder = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.finder"
+        if pressStartedInFinder {
+            finderWindowExitDetector = FinderWindowExitDetector(
+                windowFrame: finderWindowFrame(at: pressOrigin)
+            )
+        }
     }
 
     private func pollDragPasteboard() {
+        // A drag pasteboard retains its contents after release. Never interpret idle
+        // movement, a click, or a window drag as a new file drag.
+        guard NSEvent.pressedMouseButtons & 1 != 0 else {
+            endPress()
+            return
+        }
+        beginPressIfNeeded()
         let pasteboard = NSPasteboard(name: .drag)
-        let changeCount = pasteboard.changeCount
-
-        if changeCount != lastChangeCount {
-            lastChangeCount = changeCount
-            lastSeenCanonicalPaths.removeAll(keepingCapacity: true)
-            finderDragPending = false
-            cachedFinderFrames = []
-
-            if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.finder" {
-                finderDragPending = true
-                // Capture window frames once at drag start — avoids calling CGWindowListCopyWindowInfo on every poll tick.
-                cachedFinderFrames = finderWindowFrames()
+        if pasteboard.changeCount != lastChangeCount {
+            lastChangeCount = pasteboard.changeCount
+            // Clicking an inactive Finder window can activate it after mouse-down.
+            if !pressStartedInFinder,
+               NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.finder" {
+                pressStartedInFinder = true
+                finderWindowExitDetector = FinderWindowExitDetector(windowFrame: finderWindowFrame(at: pressOrigin))
             }
+            fileURLs = pressStartedInFinder ? readFileURLs(from: pasteboard) : []
         }
-
-        guard finderDragPending else { return }
-
-        let mouseLocationCG = mousePositionInCGCoordinates()
-        guard !cachedFinderFrames.contains(where: { $0.contains(mouseLocationCG) }) else { return }
-
-        finderDragPending = false
-        cachedFinderFrames = []
-
-        let fileURLs = readFileURLs(from: pasteboard)
-        guard !fileURLs.isEmpty else { return }
-
-        let canonicalPaths = Set(fileURLs.map { TransferItemCollection.canonicalPath(for: $0) })
-        let freshURLs = fileURLs.filter {
-            !lastSeenCanonicalPaths.contains(TransferItemCollection.canonicalPath(for: $0))
-        }
-
-        lastSeenCanonicalPaths = canonicalPaths
-
-        guard !freshURLs.isEmpty else { return }
-
+        guard pressStartedInFinder, !fileURLs.isEmpty, !didShowTrayForCurrentDrag else { return }
+        guard UserDefaults.standard.object(forKey: "autoShowOnDrag") as? Bool ?? true else { return }
+        let point = NSEvent.mouseLocation
+        let mode = TransferTrayActivationMode(
+            rawValue: UserDefaults.standard.string(forKey: "transferTrayActivationMode") ?? ""
+        ) ?? .both
+        let shakeDetected = shakeDetector.record(point, at: ProcessInfo.processInfo.systemUptime)
+        guard mode.shouldActivate(
+            shakeDetected: shakeDetected,
+            exitedFinderWindow: finderWindowExitDetector.hasExited(at: point)
+        ) else { return }
         didShowTrayForCurrentDrag = true
-        onFilesDetected(freshURLs, NSEvent.mouseLocation)
+        onFilesDetected(fileURLs, point)
     }
 
-    private func handleMouseUp() {
-        // Reset per-drag pasteboard state so the next drag is detected as fresh.
-        lastChangeCount = -1
-        finderDragPending = false
-        cachedFinderFrames = []
+    private func endPress() {
+        let shouldNotify = didShowTrayForCurrentDrag
+        resetPress()
+        if shouldNotify { onDragEnded() }
+    }
 
-        guard didShowTrayForCurrentDrag else { return }
+    private func resetPress() {
+        lastChangeCount = NSPasteboard(name: .drag).changeCount
+        isTrackingPress = false
+        pressStartedInFinder = false
+        fileURLs = []
+        shakeDetector.reset()
+        finderWindowExitDetector = FinderWindowExitDetector(windowFrame: nil)
         didShowTrayForCurrentDrag = false
-
-        // Receiver defers the empty-check so any drop-into-tray ingest can register first.
-        onDragEnded()
-    }
-
-    private func mousePositionInCGCoordinates() -> CGPoint {
-        let p = NSEvent.mouseLocation
-        let screenHeight = NSScreen.screens.first?.frame.height ?? 0
-        return CGPoint(x: p.x, y: screenHeight - p.y)
-    }
-
-    private func finderWindowFrames() -> [CGRect] {
-        guard let list = CGWindowListCopyWindowInfo(
-            [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
-        ) as? [[String: Any]] else { return [] }
-
-        return list.compactMap { info -> CGRect? in
-            guard (info[kCGWindowOwnerName as String] as? String) == "Finder",
-                  let b = info[kCGWindowBounds as String] as? [String: CGFloat]
-            else { return nil }
-            return CGRect(x: b["X"] ?? 0, y: b["Y"] ?? 0,
-                          width: b["Width"] ?? 0, height: b["Height"] ?? 0)
-        }
     }
 
     private func readFileURLs(from pasteboard: NSPasteboard) -> [URL] {
-        let options: [NSPasteboard.ReadingOptionKey: Any] = [
-            .urlReadingFileURLsOnly: true
-        ]
+        let options: [NSPasteboard.ReadingOptionKey: Any] = [.urlReadingFileURLsOnly: true]
+        return (pasteboard.readObjects(forClasses: [NSURL.self], options: options) as? [URL] ?? [])
+            .filter(\.isFileURL)
+    }
 
-        guard let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: options) as? [URL] else {
-            return []
+    private func finderWindowFrame(at point: NSPoint) -> CGRect? {
+        guard let finderPID = NSWorkspace.shared.frontmostApplication?.processIdentifier,
+              let windows = CGWindowListCopyWindowInfo(
+                [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
+              ) as? [[String: Any]],
+              let screenTop = NSScreen.screens.first?.frame.maxY else { return nil }
+
+        // WindowServer uses top-left coordinates; AppKit uses bottom-left coordinates.
+        // Capture the source window, so entering another Finder window still counts as exit.
+        for window in windows {
+            guard (window[kCGWindowOwnerPID as String] as? Int) == Int(finderPID),
+                  (window[kCGWindowLayer as String] as? Int) == 0,
+                  let bounds = window[kCGWindowBounds as String] as? [String: Any],
+                  let cgFrame = CGRect(dictionaryRepresentation: bounds as CFDictionary) else { continue }
+            let frame = CGRect(x: cgFrame.minX, y: screenTop - cgFrame.maxY,
+                               width: cgFrame.width, height: cgFrame.height)
+            if frame.contains(point) { return frame }
         }
-
-        return urls.filter(\.isFileURL)
+        return nil
     }
 }

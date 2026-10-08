@@ -64,8 +64,9 @@ Portuguese guide (primary): [README.pt-BR.md](./README.pt-BR.md)
 - Dragging items out of the tray removes them from the tray list automatically.
 - If you close the tray with pending items, the app attempts to restore them to their original location.
 - To move and restore real files, the main app is signed without App Sandbox; the Quick Look extension remains sandboxed.
-- Automatic trigger when Finder file drag is detected.
-- The tray opens attached to the right side of Finder whenever possible.
+- Configurable automatic activation: shake a dragged file, leave the source Finder window, or both (default).
+- The tray opens at a fixed screen position, selected under Settings → Temporary Tray → Tray position: any corner or top center (top right by default).
+- Its frosted background uses native behind-window blur and follows the app’s light/dark theme.
 - Default global shortcut to show/hide: `Control + Option + Space`.
 - V1 note: selecting multiple files without dragging does not auto-open the tray.
 
@@ -144,7 +145,7 @@ xcodebuild -project FolderPeek.xcodeproj -scheme FolderPeekCore -configuration D
 
 ### 6) Use the tray (real folder)
 
-1. In Finder, start dragging files to auto-open the tray.
+1. In Finder, drag files and shake the mouse or leave the source window to open the tray. Under Settings → Temporary Tray → Activate tray, choose Shake, Leave Finder, or Both.
 2. Manual fallback: press `Control + Option + Space`.
 3. Drop files into the tray.
 4. Drag tray items into the destination Finder folder.
