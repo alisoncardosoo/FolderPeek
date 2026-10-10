@@ -17,6 +17,11 @@ sign_folderpeek_app() {
   local extension_path="$app_path/Contents/PlugIns/FolderPeekQuickLookExtension.appex"
   local sparkle_framework="$app_path/Contents/Frameworks/Sparkle.framework"
 
+  if ! file "$extension_path/Contents/MacOS/FolderPeekQuickLookExtension" | grep -q 'Mach-O.*executable'; then
+    echo "Quick Look extension must be an executable, not a shared library" >&2
+    return 1
+  fi
+
   codesign --force --sign - "$app_path/Contents/Frameworks/FolderPeekCore.framework"
   codesign --force --sign - "$extension_path/Contents/Frameworks/FolderPeekCore.framework"
   if [[ -d "$sparkle_framework" ]]; then
@@ -32,6 +37,12 @@ sign_folderpeek_app() {
     codesign --force --sign - "$sparkle_framework"
   fi
   codesign --force --sign - --entitlements "$EXTENSION_ENTITLEMENTS" "$extension_path"
+  local signed_entitlements
+  signed_entitlements="$(codesign --display --entitlements - --xml "$extension_path" 2>/dev/null)"
+  if [[ "$(printf '%s' "$signed_entitlements" | plutil -extract 'com\.apple\.security\.app-sandbox' raw - 2>/dev/null)" != "true" ]]; then
+    echo "Quick Look extension is missing its required sandbox entitlement" >&2
+    return 1
+  fi
   codesign --force --sign - --entitlements "$APP_ENTITLEMENTS" "$app_path"
 }
 
@@ -39,7 +50,31 @@ if pgrep -x "$APP_NAME" >/dev/null 2>&1; then
   pkill -x "$APP_NAME" || true
 fi
 
-xcodebuild \
+if [[ "${1:-}" == "--repair-quicklook" ]]; then
+  # Rebuild only the extension when the machine has Command Line Tools but no Xcode.
+  # Keep the installed app and its frameworks intact, including unrelated updates.
+  REPAIR_DIR="$(mktemp -d "${TMPDIR:-/tmp}/FolderPeekQuickLook.XXXXXX")"
+  APP_PATH="$REPAIR_DIR/$APP_NAME.app"
+  ditto --noextattr --noqtn "$INSTALL_APP_PATH" "$APP_PATH"
+  mkdir -p "$REPAIR_DIR/Modules" "$REPAIR_DIR/ModuleCache"
+  xcrun swiftc -emit-module -parse-as-library -module-name FolderPeekCore \
+    -swift-version 6 -target "$(uname -m)-apple-macosx14.0" \
+    -module-cache-path "$REPAIR_DIR/ModuleCache" \
+    "$ROOT_DIR"/FolderPeekCore/Sources/*.swift \
+    -emit-module-path "$REPAIR_DIR/Modules/FolderPeekCore.swiftmodule"
+  EXTENSION_PATH="$APP_PATH/Contents/PlugIns/FolderPeekQuickLookExtension.appex"
+  xcrun swiftc -emit-executable -parse-as-library -module-name FolderPeekQuickLookExtension \
+    -swift-version 6 -target "$(uname -m)-apple-macosx14.0" \
+    -module-cache-path "$REPAIR_DIR/ModuleCache" -I "$REPAIR_DIR/Modules" \
+    -F "$EXTENSION_PATH/Contents/Frameworks" \
+    -framework FolderPeekCore -framework Foundation -framework AppKit \
+    -framework QuickLookUI -framework Quartz \
+    -Xlinker -e -Xlinker _NSExtensionMain \
+    -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
+    "$ROOT_DIR/FolderPeekQuickLookExtension/Sources/PreviewViewController.swift" \
+    -o "$EXTENSION_PATH/Contents/MacOS/FolderPeekQuickLookExtension"
+else
+  xcodebuild \
   -project "$PROJECT" \
   -scheme "$APP_NAME" \
   -configuration "$CONFIGURATION" \
@@ -47,7 +82,8 @@ xcodebuild \
   CODE_SIGNING_ALLOWED=NO \
   build
 
-APP_PATH="$DERIVED_DATA/Build/Products/$CONFIGURATION/$APP_NAME.app"
+  APP_PATH="$DERIVED_DATA/Build/Products/$CONFIGURATION/$APP_NAME.app"
+fi
 DIST_APP_PATH="$DIST_DIR/$APP_NAME.app"
 PACKAGE_APP_PATH="$PACKAGE_DIR/$APP_NAME.app"
 

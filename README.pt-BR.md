@@ -124,6 +124,16 @@ cd FolderPeek
 ./script/build_and_run.sh
 ```
 
+Para reparar apenas a extensão de uma instalação deste mesmo código, usando as
+Command Line Tools quando o Xcode completo não estiver disponível:
+
+```bash
+./script/build_and_run.sh --repair-quicklook
+```
+
+O instalador verifica que a extensão é um executável e que sua assinatura contém
+a permissão de sandbox antes de instalar o app.
+
 ### 3) Instalação manual (alternativa)
 
 1. Gere o app em `dist/FolderPeek.app`.

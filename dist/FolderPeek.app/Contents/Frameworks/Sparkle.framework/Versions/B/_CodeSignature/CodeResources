@@ -727,28 +727,28 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			JIisb/Dtir4Cxsut3TGEjH5ed28=
+			WTRanwXjj38UVDycTSQll6obDHw=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"2488ac6ff0ed8abe02c6cbaddd31848c7e5e776f" or cdhash H"2af7bf3f567c81246c1e189993b4e27c8b9abc6a"</string>
+			<string>cdhash H"59345a9f05e38f7f14543c9c4d242597aa1b0c7c" or cdhash H"6d835036954e01062daf152349d2f125cd42e72e"</string>
 		</dict>
 		<key>XPCServices/Downloader.xpc</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			mPZz0c8aWBTMA9psEm60ysGdUuE=
+			Yo0jCzJzpMeqzpGBYBRCtLjxt6o=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"98f673d1cf1a5814cc03da6c126eb4cac19d52e1" or cdhash H"1414f8b970ad203fd0bfe4ba7c299d7930b23f18"</string>
+			<string>cdhash H"628d230b3273a4c7aace9181601442b4b8f1b7aa" or cdhash H"9ec59c8c6e952e5c309912b538083d601b1ce117"</string>
 		</dict>
 		<key>XPCServices/Installer.xpc</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			w5tlHelAFxf+ssNhVWMdoxUvKco=
+			B7boYXQgI3ILVH5dFB0tPmicSrw=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"c39b651de9401717feb2c36155631da3152f29ca" or cdhash H"85ff6bc58189a4ef6bb056ec16eeeb419eedcdef"</string>
+			<string>cdhash H"07b6e861742023720b547e5d141d2d3e689c4abc" or cdhash H"73a9a30809d5f2f5995b3391bb50f96e001124fd"</string>
 		</dict>
 	</dict>
 	<key>rules</key>

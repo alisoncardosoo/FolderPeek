@@ -110,6 +110,7 @@ struct FolderPeekApp: App {
             HStack(spacing: 3) {
                 if let icon = Self.menuBarIcon {
                     Image(nsImage: icon)
+                        .renderingMode(.template)
                 }
                 if !transferTrayStore.items.isEmpty {
                     Text("\(transferTrayStore.items.count)")
@@ -144,7 +145,12 @@ struct FolderPeekApp: App {
     }
 
     private static var menuBarIcon: NSImage? {
-        scaledAppIcon(named: "FolderPeekMenuBarIcon", size: NSSize(width: 18, height: 18))
+        guard let icon = scaledAppIcon(named: "FolderPeekMenuBarIcon", size: NSSize(width: 18, height: 18)) else {
+            return nil
+        }
+        // MenuBarExtra passes the underlying NSImage to the native status item.
+        icon.isTemplate = true
+        return icon
     }
 
     // Create windows only on demand so launch and relaunch stay in the menu bar on macOS 14+.

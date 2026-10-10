@@ -19,28 +19,28 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			IqCMAtxC+57UhZjL0ekU0oN4L10=
+			sh2YHYlGcFuwFIVrApsu7puaSVI=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"22a08c02dc42fb9ed48598cbd1e914d283782f5d"</string>
+			<string>cdhash H"b21d981d8946705bb014856b029b2eee9b9a4952"</string>
 		</dict>
 		<key>Frameworks/Sparkle.framework</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			NKlhlA0YXoOUdivDmTkEODyw6Qg=
+			RQOWv6T0olmK0UqlOq3uR7RBCWg=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"34a961940d185e8394762bc3993904383cb0e908" or cdhash H"be0d134bd097c6f2a214f7acdb3ce6757cd4de3a"</string>
+			<string>cdhash H"450396bfa4f4a2598ad14aa53aadee47b4410968" or cdhash H"da735f910602c675ceeca55baae896378d7f434e"</string>
 		</dict>
 		<key>PlugIns/FolderPeekQuickLookExtension.appex</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			vEOqfI593EYxxsGKm9doeJD4m0M=
+			KHX+KaFxMkuR6ODKHkDO7uNgvCI=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"bc43aa7c8e7ddc4631c6c18a9bd7687890f89b43"</string>
+			<string>cdhash H"2875fe29a171324b91e8e0ca1e40ceeee360bc22"</string>
 		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
